@@ -1,0 +1,20 @@
+{
+  "name": "smartqueue-barber",
+  "version": "1.0.0",
+  "description": "Barber booking and queue management system",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "install-deps": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["barber", "booking", "queue", "management", "startup"],
+  "author": "Manthan",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
