@@ -3,13 +3,12 @@ const { validationResult } = require('express-validator');
 const User = require('../models/User');
 const { asyncHandler, ErrorResponse } = require('../middleware/errorHandler');
 const { generateToken } = require('../utils/tokenUtils');
-const { uploadToCloudinary } = require('../utils/cloudinary');
+// const { uploadToCloudinary } = require('../utils/cloudinary'); // Disable for now
 
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
 const register = asyncHandler(async (req, res, next) => {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -21,7 +20,6 @@ const register = asyncHandler(async (req, res, next) => {
 
   const { name, email, phone, password, role } = req.body;
 
-  // Check if user already exists
   const existingUser = await User.findOne({
     $or: [{ email }, { phone }]
   });
@@ -31,7 +29,6 @@ const register = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(`User with this ${field} already exists`, 400));
   }
 
-  // Create user
   const user = await User.create({
     name,
     email,
@@ -40,7 +37,6 @@ const register = asyncHandler(async (req, res, next) => {
     role
   });
 
-  // Generate token
   const token = generateToken(user._id);
 
   res.status(201).json({
@@ -57,7 +53,6 @@ const register = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/login
 // @access  Public
 const login = asyncHandler(async (req, res, next) => {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -69,30 +64,24 @@ const login = asyncHandler(async (req, res, next) => {
 
   const { email, password } = req.body;
 
-  // Check if user exists and include password for comparison
   const user = await User.findOne({ email }).select('+password');
 
   if (!user) {
     return next(new ErrorResponse('Invalid email or password', 401));
   }
 
-  // Check password
   const isPasswordCorrect = await user.comparePassword(password);
-
   if (!isPasswordCorrect) {
     return next(new ErrorResponse('Invalid email or password', 401));
   }
 
-  // Check if user is active
   if (!user.isActive) {
     return next(new ErrorResponse('Your account has been deactivated', 401));
   }
 
-  // Update last login
   user.lastLogin = new Date();
   await user.save();
 
-  // Generate token
   const token = generateToken(user._id);
 
   res.status(200).json({
@@ -109,9 +98,21 @@ const login = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id)
-    .populate('shop', 'name address contact')
-    .populate('favoriteShops', 'name address rating');
+  let user;
+  
+  try {
+    user = await User.findById(req.user.id);
+    
+    // Only populate if user has shop or favoriteShops
+    if (user.shop || (user.favoriteShops && user.favoriteShops.length > 0)) {
+      user = await User.findById(req.user.id)
+        .populate('shop', 'name address contact')
+        .populate('favoriteShops', 'name address rating');
+    }
+  } catch (error) {
+    // If populate fails, just get user without population
+    user = await User.findById(req.user.id);
+  }
 
   res.status(200).json({
     success: true,
@@ -128,19 +129,16 @@ const updateProfile = asyncHandler(async (req, res, next) => {
   const allowedFields = ['name', 'phone', 'specialties', 'experience'];
   const updates = {};
 
-  // Only include allowed fields
   allowedFields.forEach(field => {
     if (req.body[field] !== undefined) {
       updates[field] = req.body[field];
     }
   });
 
-  // Validate phone if provided
   if (updates.phone && !/^[6-9]\d{9}$/.test(updates.phone)) {
     return next(new ErrorResponse('Please provide a valid Indian phone number', 400));
   }
 
-  // Check if phone is already taken by another user
   if (updates.phone) {
     const existingUser = await User.findOne({
       phone: updates.phone,
@@ -174,7 +172,6 @@ const updateProfile = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/auth/change-password
 // @access  Private
 const changePassword = asyncHandler(async (req, res, next) => {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -186,17 +183,14 @@ const changePassword = asyncHandler(async (req, res, next) => {
 
   const { currentPassword, newPassword } = req.body;
 
-  // Get user with password
   const user = await User.findById(req.user.id).select('+password');
 
-  // Check current password
   const isCurrentPasswordCorrect = await user.comparePassword(currentPassword);
 
   if (!isCurrentPasswordCorrect) {
     return next(new ErrorResponse('Current password is incorrect', 400));
   }
 
-  // Update password
   user.password = newPassword;
   await user.save();
 
@@ -218,7 +212,6 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('No user found with this email', 404));
   }
 
-  // For now, just return success (implement email sending later)
   res.status(200).json({
     success: true,
     message: 'Password reset instructions sent to your email'
@@ -229,8 +222,6 @@ const forgotPassword = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/auth/reset-password/:token
 // @access  Public
 const resetPassword = asyncHandler(async (req, res, next) => {
-  // This would typically verify a reset token
-  // For now, just return success
   res.status(200).json({
     success: true,
     message: 'Password reset successfully'
@@ -246,8 +237,7 @@ const uploadAvatar = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    // Upload to cloudinary (implement this utility)
-    const avatarUrl = req.file.path; // For now, use local path
+    const avatarUrl = req.file.path;
 
     const user = await User.findByIdAndUpdate(
       req.user.id,

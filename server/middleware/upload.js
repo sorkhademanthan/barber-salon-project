@@ -1,32 +1,30 @@
 const multer = require('multer');
 const path = require('path');
-const { ErrorResponse } = require('./errorHandler');
 
 // Multer config for file uploads
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/avatars/');
   },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${req.user.id}-${Date.now()}${ext}`);
+  filename: function (req, file, cb) {
+    cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
   }
 });
 
 // File filter
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new ErrorResponse('Please upload only images', 400), false);
+    cb(new Error('Not an image! Please upload only images.'), false);
   }
 };
 
 const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
+  storage: storage,
+  fileFilter: fileFilter,
   limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5242880 // 5MB
+    fileSize: 5 * 1024 * 1024 // 5MB limit
   }
 });
 
