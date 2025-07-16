@@ -38,16 +38,16 @@ const userSchema = new mongoose.Schema({
     verificationToken: String,
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    // Customer specific fields
     favoriteShops: [{
         type: mongoose.Schema.ObjectId,
         ref: 'Shop'
     }],
+    // Barber specific fields
     shop: {
         type: mongoose.Schema.ObjectId,
         ref: 'Shop',
-        required: function() {
-            return this.role === 'barber';
-        }
+        required: false  // Remove the function requirement
     },
     specialties: [{
         type: String,
@@ -114,4 +114,5 @@ userSchema.virtual('initials').get(function() {
 // Include virtuals in JSON
 userSchema.set('toJSON', { virtuals: true });
 
+module.exports = mongoose.model('User', userSchema);
 module.exports = mongoose.model('User', userSchema);

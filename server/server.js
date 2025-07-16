@@ -2,13 +2,19 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
 const { errorHandler } = require('./middleware/errorHandler');
+const seedSpecialties = require('./utils/seedSpecialties');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB and seed data
+const initializeApp = async () => {
+    await connectDB();
+    await seedSpecialties();
+};
+
+initializeApp();
 
 // Middleware
 app.use(cors({
@@ -21,6 +27,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/shops', require('./routes/shops'));
+app.use('/api/specialties', require('./routes/specialties'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -65,8 +73,12 @@ app.listen(PORT, () => {
   - POST /api/auth/register
   - POST /api/auth/login
   - POST /api/auth/forgot-password
-  - PUT  /api/auth/reset-password/:token
+  - POST /api/auth/reset-password/:token
   - GET  /api/auth/verify-email/:token
+  - GET  /api/shops
+  - POST /api/shops
+  - GET  /api/specialties
+  - POST /api/specialties (admin only)
   `);
 });
 

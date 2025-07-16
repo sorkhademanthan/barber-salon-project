@@ -183,26 +183,12 @@ shopSchema.methods.isOpenNow = function() {
     return currentTime >= daySchedule.open && currentTime <= daySchedule.close;
 };
 
-// Method to get available time slots for a date
-shopSchema.methods.getAvailableSlots = function(date) {
-  const day = new Date(date).toLocaleDateString('en', { weekday: 'lowercase' });
-  const daySchedule = this.operatingHours[day];
-  
-  if (daySchedule.isClosed) return [];
-  
-  const slots = [];
-  const { slotDuration, bufferTime } = this.bookingSettings;
-  const totalSlotTime = slotDuration + bufferTime;
-  
-  // Convert time strings to minutes for easier calculation
-  const openMinutes = this.timeToMinutes(daySchedule.open);
-  const closeMinutes = this.timeToMinutes(daySchedule.close);
-  
-  for (let time = openMinutes; time < closeMinutes; time += totalSlotTime) {
-    slots.push(this.minutesToTime(time));
-  }
-  
-  return slots;
+// Update queue method
+shopSchema.methods.updateQueue = function(count, waitTime) {
+    this.currentQueue.count = count;
+    this.currentQueue.estimatedWaitTime = waitTime;
+    this.currentQueue.lastUpdated = new Date();
+    return this.save();
 };
 
 // Helper method to convert time string to minutes
@@ -230,31 +216,16 @@ shopSchema.methods.updateQueue = function(count, waitTime) {
 shopSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Shop', shopSchema);
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-};
+// 
 
-// Update queue count and estimated wait time
-shopSchema.methods.updateQueue = function(count, waitTime) {
-  this.currentQueue.count = count;
-  this.currentQueue.estimatedWaitTime = waitTime;
-  this.currentQueue.lastUpdated = new Date();
-  return this.save();
-};
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NjIwZjlhYjgzZDUzNzBlN2U5NjkiLCJpYXQiOjE3NTI2NTQzNjIsImV4cCI6MTc1MzI1OTE2Mn0.BlAi8geDQd5XGC9Zvpt73PO46NwYT7MoOzyMNk7gu8M
+//customer token jwt
 
-// Ensure virtual fields are serialized
-shopSchema.set('toJSON', { virtuals: true });
 
-module.exports = mongoose.model('Shop', shopSchema);
-shopSchema.methods.updateQueue = function(count, waitTime) {
-  this.currentQueue.count = count;
-  this.currentQueue.estimatedWaitTime = waitTime;
-  this.currentQueue.lastUpdated = new Date();
-  return this.save();
-};
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NjFmNjlhYjgzZDUzNzBlN2U5NjYiLCJpYXQiOjE3NTI2NTYxOTUsImV4cCI6MTc1MzI2MDk5NX0.GW7F7lrFtA1qLLYke9weCKeb7C-TbY8uo341UMOUMqE
 
-// Ensure virtual fields are serialized
-shopSchema.set('toJSON', { virtuals: true });
+// barber token
 
-module.exports = mongoose.model('Shop', shopSchema);
+
+// new customer alice
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NmJhN2UyM2VmZWFkN2EzODc5YzkiLCJpYXQiOjE3NTI2NTY4NDgsImV4cCI6MTc1MzI2MTY0OH0.u9_P1ifwgeXydweKdIXqlNWtZJfdiVhcOYST_6CaI8o
