@@ -27,6 +27,14 @@ const userSchema = new mongoose.Schema({
         enum: ['customer', 'barber', 'admin'],
         default: 'customer'
     },
+    // Email verification fields
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: String,
+    emailVerificationExpire: Date,
+    // Password reset fields
     verificationToken: String,
     resetPasswordToken: String,
     resetPasswordExpire: Date,

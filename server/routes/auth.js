@@ -8,7 +8,9 @@ const {
   changePassword,
   forgotPassword,
   resetPassword,
-  uploadAvatar
+  uploadAvatar,
+  verifyEmail,
+  resendVerification
 } = require('../controllers/authController');
 const { protect, authenticateToken } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
@@ -60,6 +62,31 @@ const changePasswordValidation = [
   body('newPassword')
     .isLength({ min: 6 })
     .withMessage('New password must be at least 6 characters long')
+];
+
+const forgotPasswordValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email')
+];
+
+const resetPasswordValidation = [
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('New password must be at least 6 characters long')
+];
+
+const updateProfileValidation = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 50 })
+    .withMessage('Name must be between 2 and 50 characters'),
+  body('phone')
+    .optional()
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage('Please provide a valid Indian phone number')
 ];
 
 // Public routes
@@ -125,17 +152,28 @@ router.post('/login', loginValidation, async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 });
-router.post('/forgot-password', 
+
+// Forgot/Reset password routes (Public routes)
+router.post('/forgot-password', forgotPasswordValidation, forgotPassword);
+router.post('/reset-password/:token', resetPasswordValidation, (req, res, next) => {
+    console.log('\n🔍 RESET PASSWORD ROUTE HIT');
+    console.log('📍 Route: POST /api/auth/reset-password/:token');
+    console.log('🔑 Token received:', req.params.token);
+    console.log('📝 Request body:', req.body);
+    console.log('========================\n');
+    resetPassword(req, res, next);
+});
+
+// Email verification routes
+router.get('/verify-email/:token', verifyEmail);
+router.post('/resend-verification', 
   body('email').isEmail().withMessage('Please provide a valid email'),
-  forgotPassword
-);
-router.put('/reset-password/:token', 
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-  resetPassword
+  resendVerification
 );
 
 // Protected routes
 router.get('/me', protect, getMe);
+router.put('/me', protect, updateProfileValidation, updateProfile);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePasswordValidation, changePassword);
 router.put('/avatar', protect, upload.single('avatar'), uploadAvatar);

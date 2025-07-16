@@ -1,5 +1,7 @@
 # 🚀 SmartQueue Project Roadmap
 
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NTJjZDIzOGFlN2ZjMTVhMWQ5MTQiLCJpYXQiOjE3NTI2NTA0NDYsImV4cCI6MTc1MzI1NTI0Nn0.-hUJDy7ltP_4hA_W4Wao51gQ6wYSom6avNPFVXz1wWw
+
 ## 📋 Current Status: Foundation Complete ✅
 
 You've successfully set up the complete foundation of your barber booking startup! Here's what we've built and what's next.
