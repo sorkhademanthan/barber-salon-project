@@ -84,7 +84,7 @@ const Register = () => {
       title="Create Account"
       subtitle="Join our premium grooming community"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Full Name"
           type="text"
@@ -122,25 +122,23 @@ const Register = () => {
         />
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-primary-700">
+          <label className="block text-sm font-medium text-slate-700">
             I am a
           </label>
-          <div className="flex space-x-4">
+          <div className="grid grid-cols-2 gap-3">
             {[
               { value: 'customer', label: 'Customer', icon: User },
               { value: 'barber', label: 'Barber', icon: Users },
             ].map(({ value, label, icon: Icon }) => (
-              <motion.label
+              <label
                 key={value}
                 className={`
-                  flex-1 flex items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all
+                  flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all
                   ${formData.role === value 
-                    ? 'border-accent-400 bg-accent-50 text-accent-700' 
-                    : 'border-primary-200 hover:border-primary-300'
+                    ? 'border-amber-400 bg-amber-50 text-amber-700' 
+                    : 'border-slate-200 hover:border-slate-300'
                   }
                 `}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
               >
                 <input
                   type="radio"
@@ -150,9 +148,9 @@ const Register = () => {
                   onChange={handleChange}
                   className="sr-only"
                 />
-                <Icon size={20} className="mr-2" />
+                <Icon size={18} className="mr-2" />
                 <span className="font-medium">{label}</span>
-              </motion.label>
+              </label>
             ))}
           </div>
         </div>
@@ -183,30 +181,26 @@ const Register = () => {
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full mt-6"
           loading={loading}
           disabled={loading}
         >
           Create Account
         </Button>
 
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <span className="text-primary-600">Already have an account? </span>
+        <div className="text-center pt-4 border-t border-slate-200">
+          <span className="text-slate-600">Already have an account? </span>
           <Link
             to="/login"
-            className="text-accent-600 hover:text-accent-500 font-medium transition-colors"
+            className="font-medium text-amber-600 hover:text-amber-700 transition-colors"
           >
             Sign in
           </Link>
-        </motion.div>
+        </div>
       </form>
     </AuthLayout>
   );
 };
 
 export default Register;
+       

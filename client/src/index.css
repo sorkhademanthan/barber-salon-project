@@ -1,20 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cal+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cal+Sans:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Reset and base styles */
 @layer base {
   * {
-    @apply border-border;
     box-sizing: border-box;
   }
 
   body {
-    @apply bg-primary-50 text-primary-900 font-sans antialiased;
-    font-feature-settings: 'cv11', 'ss01';
-    font-variation-settings: 'opsz' 32;
+    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
   }
 
   html {
@@ -22,29 +20,36 @@
   }
 }
 
-/* Component styles */
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-accent-500 to-accent-600 
-           text-white font-medium rounded-xl shadow-luxury
-           hover:from-accent-600 hover:to-accent-700 hover:shadow-luxury-lg
-           focus:ring-4 focus:ring-accent-400/20 focus:outline-none
-           transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98];
+    @apply px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 
+           text-white font-medium rounded-xl shadow-lg
+           hover:from-yellow-600 hover:to-yellow-700 hover:shadow-xl
+           focus:ring-4 focus:ring-yellow-400/20 focus:outline-none
+           transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-white text-primary-700 font-medium rounded-xl
-           border border-primary-200 shadow-luxury hover:shadow-luxury-lg
-           hover:bg-primary-50 focus:ring-4 focus:ring-primary-400/20
-           transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98];
+    @apply px-6 py-3 bg-white text-gray-700 font-medium rounded-xl
+           border border-gray-200 shadow-lg hover:shadow-xl
+           hover:bg-gray-50 focus:ring-4 focus:ring-gray-400/20
+           transition-all duration-200 transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply px-6 py-3 text-gray-600 font-medium rounded-xl
+           hover:bg-gray-100 focus:ring-4 focus:ring-gray-400/20
+           transition-all duration-200;
   }
 
   .btn-danger {
-    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    @apply px-6 py-3 bg-red-500 text-white font-medium rounded-xl shadow-lg
+           hover:bg-red-600 focus:ring-4 focus:ring-red-400/20
+           transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
 
   .input-field {
@@ -63,80 +68,73 @@
     @apply p-6;
   }
 
-  /* Luxury Glass Effect */
   .glass {
     @apply bg-white/60 backdrop-blur-md border border-white/20;
   }
-  
+
   .glass-dark {
-    @apply bg-primary-900/60 backdrop-blur-md border border-primary-700/20;
+    @apply bg-gray-900/60 backdrop-blur-md border border-gray-700/20;
   }
 
-  /* Custom Scrollbar */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-primary-100 rounded-full;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-primary-300 rounded-full hover:bg-primary-400;
+    @apply bg-gray-100 rounded-full;
   }
 
-  /* Luxury Input Focus */
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  }
+
   .luxury-input {
-    @apply w-full px-4 py-3 bg-white/50 border border-primary-200 rounded-xl
-           focus:border-accent-400 focus:ring-4 focus:ring-accent-400/10
-           transition-all duration-200 placeholder:text-primary-400
+    @apply w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl
+           focus:border-yellow-400 focus:ring-4 focus:ring-yellow-400/10
+           transition-all duration-200 placeholder:text-gray-400
            backdrop-blur-sm;
   }
 
-  /* Luxury Card */
   .luxury-card {
     @apply bg-white/80 backdrop-blur-sm border border-white/20 
-           rounded-2xl shadow-luxury hover:shadow-luxury-lg
-           transition-all duration-300 hover:scale-[1.02];
+           rounded-2xl shadow-lg hover:shadow-xl
+           transition-all duration-300 hover:scale-105;
   }
 
-  /* Status Badges */
   .badge-success {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-           bg-success-100 text-success-700 border border-success-200;
+           bg-green-100 text-green-700 border border-green-200;
   }
 
   .badge-warning {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-           bg-accent-100 text-accent-700 border border-accent-200;
+           bg-yellow-100 text-yellow-700 border border-yellow-200;
   }
 
   .badge-danger {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-           bg-danger-100 text-danger-700 border border-danger-200;
+           bg-red-100 text-red-700 border border-red-200;
   }
 
   .badge-info {
     @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-           bg-primary-100 text-primary-700 border border-primary-200;
+           bg-blue-100 text-blue-700 border border-blue-200;
   }
 }
 
-/* Utility classes */
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-accent-600 to-accent-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-yellow-600 to-yellow-500 bg-clip-text text-transparent;
   }
 
   .bg-gradient-primary {
-    @apply bg-gradient-to-br from-primary-50 via-white to-accent-50;
+    @apply bg-gradient-to-br from-gray-50 via-white to-yellow-50;
   }
 
   .bg-gradient-luxury {
-    @apply bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900;
+    @apply bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900;
   }
 
-  /* Animation utilities */
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out;
   }
@@ -152,7 +150,6 @@
     }
   }
 
-  /* Shimmer loading effect */
   .shimmer {
     position: relative;
     overflow: hidden;
@@ -172,11 +169,19 @@
       transparent
     );
     animation: shimmer 2s infinite;
-    content: '';
+    content: "";
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 }
 
-/* React Datepicker Custom Styles */
 .react-datepicker-wrapper {
   width: 100%;
 }
@@ -186,26 +191,32 @@
 }
 
 .react-datepicker {
-  @apply border-none shadow-luxury-lg rounded-2xl overflow-hidden !important;
+  @apply border-none shadow-xl rounded-2xl overflow-hidden !important;
 }
 
 .react-datepicker__header {
-  @apply bg-primary-50 border-none !important;
+  @apply bg-gray-50 border-none !important;
 }
 
 .react-datepicker__day--selected {
-  @apply bg-accent-500 text-white !important;
+  @apply bg-yellow-500 text-white !important;
 }
 
 .react-datepicker__day:hover {
-  @apply bg-accent-100 !important;
+  @apply bg-yellow-100 !important;
 }
 
-/* React Hot Toast Custom Styles */
 .toast-success {
-  @apply bg-success-50 text-success-800 border border-success-200 !important;
+  @apply bg-green-50 text-green-800 border border-green-200 !important;
 }
 
+.toast-error {
+  @apply bg-red-50 text-red-800 border border-red-200 !important;
+}
+
+.toast-loading {
+  @apply bg-blue-50 text-blue-800 border border-blue-200 !important;
+}
 .toast-error {
   @apply bg-danger-50 text-danger-800 border border-danger-200 !important;
 }

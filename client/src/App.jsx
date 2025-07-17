@@ -1,11 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-
-// Context Providers
-import { AuthProvider } from './context/AuthContext';
-
-// Components
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
 
 // Auth Pages
@@ -23,20 +20,28 @@ import MyBookings from './pages/customer/MyBookings';
 
 // Barber Pages
 import Appointments from './pages/barber/Appointments';
-import Availability from './pages/barber/Availability';
 
 // Admin Pages
-import Users from './pages/admin/Users';
-import AllBookings from './pages/admin/AllBookings';
 
 // Common Pages
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
 import Unauthorized from './pages/Unauthorized';
 import NotFound from './pages/NotFound';
 
-// Protected Route Component
-import ProtectedRoute from './components/auth/ProtectedRoute';
+// Dashboard Router - Routes to appropriate dashboard based on role
+const DashboardRouter = () => {
+  const { user } = useAuth();
+  
+  switch (user?.role) {
+    case 'customer':
+      return <CustomerDashboard />;
+    case 'barber':
+      return <BarberDashboard />;
+    case 'admin':
+      return <AdminDashboard />;
+    default:
+      return <Navigate to="/login" replace />;
+  }
+};
 
 function App() {
   return (
@@ -76,27 +81,6 @@ function App() {
                           <Appointments />
                         </ProtectedRoute>
                       } />
-                      <Route path="/availability" element={
-                        <ProtectedRoute roles={['barber']}>
-                          <Availability />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Admin Routes */}
-                      <Route path="/users" element={
-                        <ProtectedRoute roles={['admin']}>
-                          <Users />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/all-bookings" element={
-                        <ProtectedRoute roles={['admin']}>
-                          <AllBookings />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Common Routes */}
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/settings" element={<Settings />} />
                       
                       {/* Error Routes */}
                       <Route path="/unauthorized" element={<Unauthorized />} />
@@ -147,20 +131,5 @@ function App() {
   );
 }
 
-// Dashboard Router - Routes to appropriate dashboard based on role
-const DashboardRouter = () => {
-  const { user } = useAuth();
-  
-  switch (user?.role) {
-    case 'customer':
-      return <CustomerDashboard />;
-    case 'barber':
-      return <BarberDashboard />;
-    case 'admin':
-      return <AdminDashboard />;
-    default:
-      return <Navigate to="/login" replace />;
-  }
-};
-
 export default App;
+           

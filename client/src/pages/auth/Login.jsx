@@ -62,7 +62,7 @@ const Login = () => {
   return (
     <AuthLayout
       title="Welcome Back"
-      subtitle="Sign in to your account to continue"
+      subtitle="Sign in to continue your grooming journey"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
@@ -89,18 +89,23 @@ const Login = () => {
           autoComplete="current-password"
         />
 
-        <div className="flex items-center justify-between">
-          <label className="flex items-center">
+        <div className="flex items-center justify-between pt-2">
+          <motion.label 
+            className="flex items-center group cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+          >
             <input
               type="checkbox"
-              className="w-4 h-4 text-accent-500 border-primary-300 rounded focus:ring-accent-500"
+              className="w-5 h-5 text-amber-500 border-2 border-slate-300 rounded-lg focus:ring-amber-500 focus:ring-2 bg-white/50 transition-all duration-200"
             />
-            <span className="ml-2 text-sm text-primary-600">Remember me</span>
-          </label>
+            <span className="ml-3 text-sm font-medium text-slate-600 group-hover:text-slate-800 transition-colors">
+              Remember me
+            </span>
+          </motion.label>
           
           <Link
             to="/forgot-password"
-            className="text-sm text-accent-600 hover:text-accent-500 transition-colors"
+            className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors duration-200 hover:underline decoration-2 underline-offset-2"
           >
             Forgot password?
           </Link>
@@ -108,7 +113,7 @@ const Login = () => {
 
         <Button
           type="submit"
-          className="w-full"
+          className="w-full mt-8"
           loading={loading}
           disabled={loading}
         >
@@ -116,15 +121,15 @@ const Login = () => {
         </Button>
 
         <motion.div
-          className="text-center"
+          className="text-center pt-6 border-t border-slate-200/60"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.4 }}
         >
-          <span className="text-primary-600">Don't have an account? </span>
+          <span className="text-slate-600 font-medium">Don't have an account? </span>
           <Link
             to="/register"
-            className="text-accent-600 hover:text-accent-500 font-medium transition-colors"
+            className="font-bold text-amber-600 hover:text-amber-700 transition-colors duration-200 hover:underline decoration-2 underline-offset-2"
           >
             Sign up
           </Link>

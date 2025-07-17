@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { forwardRef } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
@@ -11,40 +10,38 @@ const Button = forwardRef(({
   className = '',
   ...props 
 }, ref) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-4';
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none';
   
   const variants = {
-    primary: 'btn-primary',
-    secondary: 'btn-secondary',
-    ghost: 'btn-ghost',
-    danger: 'px-6 py-3 bg-danger-500 text-white hover:bg-danger-600 focus:ring-danger-400/20 shadow-luxury hover:shadow-luxury-lg',
+    primary: 'h-12 px-6 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-xl focus:ring-4 focus:ring-amber-500/20',
+    secondary: 'h-12 px-6 bg-white border border-slate-200 text-slate-700 shadow-md hover:shadow-lg focus:ring-4 focus:ring-slate-200',
+    ghost: 'h-10 px-4 text-slate-600 hover:bg-slate-100',
+    danger: 'h-12 px-6 bg-red-500 text-white shadow-lg hover:bg-red-600 focus:ring-4 focus:ring-red-500/20',
   };
 
   const sizes = {
-    small: 'px-4 py-2 text-sm',
-    default: 'px-6 py-3',
-    large: 'px-8 py-4 text-lg',
+    small: 'h-10 px-4 text-sm',
+    default: 'h-14 px-8',
+    large: 'h-16 px-10 text-lg',
   };
 
   const isDisabled = disabled || loading;
 
   return (
-    <motion.button
+    <button
       ref={ref}
       className={`
         ${baseClasses}
         ${variants[variant]}
-        ${sizes[size]}
-        ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'transform hover:scale-[1.02] active:scale-[0.98]'}
+        ${isDisabled ? 'opacity-60 cursor-not-allowed transform-none hover:scale-100' : ''}
         ${className}
       `}
       disabled={isDisabled}
-      whileTap={!isDisabled ? { scale: 0.98 } : {}}
       {...props}
     >
       {loading && <LoadingSpinner size="small" className="mr-2" />}
       {children}
-    </motion.button>
+    </button>
   );
 });
 
