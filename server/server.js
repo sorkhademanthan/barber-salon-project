@@ -29,6 +29,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/shops', require('./routes/shops'));
 app.use('/api/specialties', require('./routes/specialties'));
+app.use('/api/services', require('./routes/services'));
+app.use('/api/working-hours', require('./routes/workingHours'));
+app.use('/api/slots', require('./routes/slots'));
+app.use('/api/bookings', require('./routes/bookings'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -72,13 +76,15 @@ app.listen(PORT, () => {
   📚 Available Routes:
   - POST /api/auth/register
   - POST /api/auth/login
-  - POST /api/auth/forgot-password
-  - POST /api/auth/reset-password/:token
-  - GET  /api/auth/verify-email/:token
   - GET  /api/shops
   - POST /api/shops
   - GET  /api/specialties
-  - POST /api/specialties (admin only)
+  - GET  /api/services
+  - GET  /api/working-hours
+  - POST /api/slots/generate
+  - GET  /api/slots/available/:barberId/:date
+  - POST /api/bookings
+  - GET  /api/bookings
   `);
 });
 

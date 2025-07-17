@@ -204,28 +204,8 @@ shopSchema.methods.minutesToTime = function(minutes) {
   return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
 };
 
-// Update queue count and estimated wait time
-shopSchema.methods.updateQueue = function(count, waitTime) {
-  this.currentQueue.count = count;
-  this.currentQueue.estimatedWaitTime = waitTime;
-  this.currentQueue.lastUpdated = new Date();
-  return this.save();
-};
-
 // Ensure virtual fields are serialized
 shopSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Shop', shopSchema);
-// 
-
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NjIwZjlhYjgzZDUzNzBlN2U5NjkiLCJpYXQiOjE3NTI2NTQzNjIsImV4cCI6MTc1MzI1OTE2Mn0.BlAi8geDQd5XGC9Zvpt73PO46NwYT7MoOzyMNk7gu8M
-//customer token jwt
-
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NjFmNjlhYjgzZDUzNzBlN2U5NjYiLCJpYXQiOjE3NTI2NTYxOTUsImV4cCI6MTc1MzI2MDk5NX0.GW7F7lrFtA1qLLYke9weCKeb7C-TbY8uo341UMOUMqE
-
-// barber token
-
-
-// new customer alice
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NmJhN2UyM2VmZWFkN2EzODc5YzkiLCJpYXQiOjE3NTI2NTY4NDgsImV4cCI6MTc1MzI2MTY0OH0.u9_P1ifwgeXydweKdIXqlNWtZJfdiVhcOYST_6CaI8o
+ 
