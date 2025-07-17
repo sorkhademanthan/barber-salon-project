@@ -35,8 +35,19 @@ const protect = asyncHandler(async (req, res, next) => {
 // Check user roles
 const checkRole = (...roles) => {
     return (req, res, next) => {
+        console.log('🔍 Role check:', {
+            userRole: req.user.role,
+            allowedRoles: roles,
+            hasAccess: roles.includes(req.user.role)
+        });
+        
         if (!roles.includes(req.user.role)) {
-            return next(new ErrorResponse(`User role ${req.user.role} is not authorized to access this route`, 403));
+            return next(
+                new ErrorResponse(
+                    `User role ${req.user.role} is not authorized to access this route`,
+                    403
+                )
+            );
         }
         next();
     };

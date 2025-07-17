@@ -5,9 +5,12 @@ const {
     getUserBookings,
     getBooking,
     updateBookingStatus,
-    cancelBooking
+    cancelBooking,
+    getBarberBookings,
+    getCustomerBookings
 } = require('../controllers/bookingController');
 const { protect, checkRole } = require('../middleware/auth');
+const { isBookingCustomer, isBookingBarber, isBookingParticipant } = require('../middleware/ownershipCheck');
 
 const router = express.Router();
 
@@ -50,11 +53,19 @@ router.use(protect);
 
 // Customer routes
 router.post('/', checkRole('customer'), createBookingValidation, createBooking);
-router.get('/', getUserBookings);
-router.get('/:id', getBooking);
-router.put('/:id/cancel', cancelBookingValidation, cancelBooking);
+router.get('/customer', checkRole('customer'), getCustomerBookings);
 
-// Barber/Admin routes
-router.put('/:id/status', checkRole('barber', 'admin'), updateStatusValidation, updateBookingStatus);
+// Barber routes  
+router.get('/barber', checkRole('barber'), getBarberBookings);
+
+// Shared routes (with ownership checks)
+router.get('/my-bookings', getUserBookings);
+router.get('/:id', isBookingParticipant, getBooking);
+
+// Barber/Admin only routes - Fix the middleware order
+router.put('/:id/status', updateStatusValidation, checkRole('barber', 'admin'), updateBookingStatus);
+
+// Cancel booking (Customer can cancel their own, Barber/Admin can cancel any)
+router.delete('/:id', cancelBookingValidation, isBookingParticipant, cancelBooking);
 
 module.exports = router;

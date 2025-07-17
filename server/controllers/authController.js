@@ -485,4 +485,3 @@ module.exports = {
   verifyEmail,
   resendVerification
 };
-   

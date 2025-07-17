@@ -112,4 +112,3 @@ const sendPasswordResetEmail = async (email, resetToken, name) => {
 };
 
 module.exports = { createTransporter, sendVerificationEmail, sendPasswordResetEmail };
-                        

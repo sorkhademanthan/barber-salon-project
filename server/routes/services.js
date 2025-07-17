@@ -33,8 +33,3 @@ router.post('/', protect, checkRole('barber', 'admin'), serviceValidation, creat
 
 module.exports = router;
 
-
-
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODc3NjFmNjlhYjgzZDUzNzBlN2U5NjYiLCJpYXQiOjE3NTI3MzI1NjYsImV4cCI6MTc1MzMzNzM2Nn0.4ffsOgybMTnLsUmIDpx3WK8S2cDSH-2UUhQf01DO0Mw
-
-// JWT token customer
