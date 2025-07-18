@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, User, Phone, Users } from 'lucide-react';
+import { Mail, Lock, User, Phone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import AuthLayout from '../../components/auth/AuthLayout';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { motion } from 'framer-motion';
+import { Crown } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,7 @@ const Register = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'customer',
+    role: 'customer', // Always customer for regular registration
   });
   const [errors, setErrors] = useState({});
   
@@ -32,33 +33,11 @@ const Register = () => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.name) {
-      newErrors.name = 'Name is required';
-    } else if (formData.name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
-    }
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    
-    if (!formData.phone) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid Indian phone number';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
+    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.phone) newErrors.phone = 'Phone is required';
+    if (!formData.password) newErrors.password = 'Password is required';
+    if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
@@ -84,17 +63,16 @@ const Register = () => {
       title="Create Account"
       subtitle="Join our premium grooming community"
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Full Name"
-          type="text"
           name="name"
           value={formData.name}
           onChange={handleChange}
           placeholder="Enter your full name"
           icon={User}
           error={errors.name}
-          autoComplete="name"
+          required
         />
 
         <Input
@@ -106,54 +84,19 @@ const Register = () => {
           placeholder="Enter your email"
           icon={Mail}
           error={errors.email}
-          autoComplete="email"
+          required
         />
 
         <Input
           label="Phone Number"
-          type="tel"
           name="phone"
           value={formData.phone}
           onChange={handleChange}
           placeholder="Enter your phone number"
           icon={Phone}
           error={errors.phone}
-          autoComplete="tel"
+          required
         />
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">
-            I am a
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              { value: 'customer', label: 'Customer', icon: User },
-              { value: 'barber', label: 'Barber', icon: Users },
-            ].map(({ value, label, icon: Icon }) => (
-              <label
-                key={value}
-                className={`
-                  flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all
-                  ${formData.role === value 
-                    ? 'border-amber-400 bg-amber-50 text-amber-700' 
-                    : 'border-slate-200 hover:border-slate-300'
-                  }
-                `}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value={value}
-                  checked={formData.role === value}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <Icon size={18} className="mr-2" />
-                <span className="font-medium">{label}</span>
-              </label>
-            ))}
-          </div>
-        </div>
 
         <Input
           label="Password"
@@ -164,7 +107,7 @@ const Register = () => {
           placeholder="Create a password"
           icon={Lock}
           error={errors.password}
-          autoComplete="new-password"
+          required
         />
 
         <Input
@@ -176,7 +119,7 @@ const Register = () => {
           placeholder="Confirm your password"
           icon={Lock}
           error={errors.confirmPassword}
-          autoComplete="new-password"
+          required
         />
 
         <Button
@@ -188,14 +131,47 @@ const Register = () => {
           Create Account
         </Button>
 
-        <div className="text-center pt-4 border-t border-slate-200">
-          <span className="text-slate-600">Already have an account? </span>
+        <div className="text-center pt-4 border-t border-zinc-700">
+          <span className="text-zinc-400">Already have an account? </span>
           <Link
             to="/login"
-            className="font-medium text-amber-600 hover:text-amber-700 transition-colors"
+            className="font-bold text-amber-400 hover:text-amber-300 transition-colors"
           >
             Sign in
           </Link>
+          
+          {/* Compact Shop Owner CTA */}
+          <motion.div
+            className="mt-4 relative"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <div className="relative bg-gradient-to-r from-zinc-800/60 to-zinc-900/60 backdrop-blur-sm border border-amber-500/20 rounded-xl p-3">
+              <div className="flex items-center space-x-3">
+                <motion.div
+                  className="p-2 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg"
+                  animate={{ rotate: [0, 3, -3, 0] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                >
+                  <Crown size={16} className="text-black" />
+                </motion.div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-sm font-black text-white">Own a Shop?</h3>
+                  <p className="text-amber-400 text-xs">Join the empire</p>
+                </div>
+                <Link to="/shop-register">
+                  <motion.button
+                    className="px-4 py-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-xs font-bold rounded-lg"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Launch ✨
+                  </motion.button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </form>
     </AuthLayout>
@@ -203,4 +179,3 @@ const Register = () => {
 };
 
 export default Register;
-       

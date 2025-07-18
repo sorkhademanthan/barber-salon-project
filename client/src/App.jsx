@@ -8,6 +8,7 @@ import Navbar from './components/layout/Navbar';
 // Auth Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ShopOwnerRegister from './pages/auth/ShopOwnerRegister';
 
 // Dashboard Pages
 import CustomerDashboard from './pages/dashboard/CustomerDashboard';
@@ -22,6 +23,8 @@ import MyBookings from './pages/customer/MyBookings';
 import Appointments from './pages/barber/Appointments';
 
 // Admin Pages
+import CreateShop from './pages/admin/CreateShop';
+import CreateBarber from './pages/admin/CreateBarber';
 
 // Common Pages
 import Unauthorized from './pages/Unauthorized';
@@ -46,12 +49,18 @@ const DashboardRouter = () => {
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <div className="min-h-screen bg-gradient-primary">
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/shop-register" element={<ShopOwnerRegister />} />
             
             {/* Protected Routes with Layout */}
             <Route path="/*" element={
@@ -82,6 +91,18 @@ function App() {
                         </ProtectedRoute>
                       } />
                       
+                      {/* Admin Routes */}
+                      <Route path="/create-shop" element={
+                        <ProtectedRoute roles={['admin']}>
+                          <CreateShop />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/create-barber" element={
+                        <ProtectedRoute roles={['admin']}>
+                          <CreateBarber />
+                        </ProtectedRoute>
+                      } />
+
                       {/* Error Routes */}
                       <Route path="/unauthorized" element={<Unauthorized />} />
                       <Route path="/404" element={<NotFound />} />
@@ -132,4 +153,3 @@ function App() {
 }
 
 export default App;
-           

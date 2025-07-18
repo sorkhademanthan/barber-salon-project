@@ -11,7 +11,8 @@ import {
   X,
   Home,
   Clock,
-  Users
+  Users,
+  Building
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../ui/Button';
@@ -36,7 +37,8 @@ const Navbar = () => {
     ],
     admin: [
       { name: 'Dashboard', href: '/dashboard', icon: Home },
-      { name: 'Users', href: '/users', icon: Users },
+      { name: 'Create Shop', href: '/create-shop', icon: Building },
+      { name: 'Create Barber', href: '/create-barber', icon: Scissors },
       { name: 'All Bookings', href: '/all-bookings', icon: Calendar },
     ],
   };
