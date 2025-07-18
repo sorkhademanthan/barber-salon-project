@@ -1,84 +1,84 @@
 const mongoose = require('mongoose');
 
 const shopSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'Shop name is required'],
-        trim: true,
-        maxlength: [100, 'Shop name cannot exceed 100 characters']
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    unique: true // One shop per owner
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  address: {
+    street: {
+      type: String,
+      required: true
     },
-    description: {
-        type: String,
-        trim: true,
-        maxlength: [500, 'Description cannot exceed 500 characters']
+    city: {
+      type: String,
+      required: true
     },
-    address: {
-        street: {
-            type: String,
-            required: [true, 'Street address is required']
-        },
-        city: {
-            type: String,
-            required: [true, 'City is required']
-        },
-        state: {
-            type: String,
-            required: [true, 'State is required']
-        },
-        zipCode: {
-            type: String,
-            required: [true, 'Zip code is required']
-        },
-        coordinates: {
-            latitude: Number,
-            longitude: Number
-        }
+    state: {
+      type: String,
+      required: true
     },
-    contact: {
-        phone: {
-            type: String,
-            required: [true, 'Phone number is required']
-        },
-        email: {
-            type: String,
-            required: [true, 'Email is required'],
-            lowercase: true
-        },
-        website: String
+    zipCode: {
+      type: String,
+      required: true
+    }
+  },
+  contact: {
+    phone: {
+      type: String,
+      required: true
     },
-    owner: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true
+    email: {
+      type: String,
+      required: true
     },
-    rating: {
-        average: {
-            type: Number,
-            default: 0,
-            min: 0,
-            max: 5
-        },
-        count: {
-            type: Number,
-            default: 0
-        }
-    },
-    images: [{
-        url: String,
-        public_id: String
-    }],
-    workingHours: {
-        monday: { open: String, close: String, closed: { type: Boolean, default: false } },
-        tuesday: { open: String, close: String, closed: { type: Boolean, default: false } },
-        wednesday: { open: String, close: String, closed: { type: Boolean, default: false } },
-        thursday: { open: String, close: String, closed: { type: Boolean, default: false } },
-        friday: { open: String, close: String, closed: { type: Boolean, default: false } },
-        saturday: { open: String, close: String, closed: { type: Boolean, default: false } },
-        sunday: { open: String, close: String, closed: { type: Boolean, default: false } }
-    },
-    services: [{
-        type: mongoose.Schema.ObjectId,
-        ref: 'Service'
+    website: {
+      type: String
+    }
+  },
+  services: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Service'
+  }],
+  barbers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  workingHours: {
+    monday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
+    tuesday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
+    wednesday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
+    thursday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
+    friday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
+    saturday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
+    sunday: { start: String, end: String, isOpen: { type: Boolean, default: false } }
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'active', 'suspended'],
+    default: 'pending'
+  },
+  isSetupComplete: {
+    type: Boolean,
+    default: false
+  }
+}, {
+  timestamps: true
+});
+
+// Index for performance
+shopSchema.index({ ownerId: 1 });
+shopSchema.index({ 'address.city': 1 });
+shopSchema.index({ status: 1 });
+
+module.exports = mongoose.model('Shop', shopSchema);
     }],
     barbers: [{
         user: {

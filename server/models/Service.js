@@ -1,51 +1,51 @@
 const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'Service name is required'],
-        trim: true,
-        maxlength: [100, 'Service name cannot exceed 100 characters']
-    },
-    description: {
-        type: String,
-        trim: true,
-        maxlength: [500, 'Description cannot exceed 500 characters']
-    },
-    price: {
-        type: Number,
-        required: [true, 'Service price is required'],
-        min: [0, 'Price cannot be negative']
-    },
-    duration: {
-        type: Number,
-        required: [true, 'Service duration is required'],
-        min: [15, 'Duration must be at least 15 minutes'],
-        max: [480, 'Duration cannot exceed 8 hours']
-    },
-    category: {
-        type: String,
-        required: [true, 'Service category is required'],
-        enum: ['haircut', 'beard', 'shave', 'styling', 'coloring', 'facial', 'massage', 'other']
-    },
-    shop: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Shop',
-        required: true
-    },
-    image: {
-        url: String,
-        public_id: String
-    },
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    popularity: {
-        type: Number,
-        default: 0,
-        min: 0
-    }
+  shopId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Shop',
+    required: true
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  category: {
+    type: String,
+    required: true,
+    enum: ['Hair', 'Beard', 'Styling', 'Treatment', 'Package']
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  duration: {
+    type: Number, // in minutes
+    required: true,
+    min: 15
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  image: {
+    type: String // Cloudinary URL
+  }
+}, {
+  timestamps: true
+});
+
+// Compound index for shop services
+serviceSchema.index({ shopId: 1, category: 1 });
+serviceSchema.index({ shopId: 1, isActive: 1 });
+
+module.exports = mongoose.model('Service', serviceSchema);
 }, {
     timestamps: true
 });

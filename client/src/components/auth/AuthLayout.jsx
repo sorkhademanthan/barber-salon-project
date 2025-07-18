@@ -1,181 +1,206 @@
 import { motion } from 'framer-motion';
-import { Crown, Sparkles } from 'lucide-react';
+import { Crown } from 'lucide-react';
 
 const AuthLayout = ({ children, title, subtitle }) => {
 	return (
-		<div className="h-screen bg-black text-white overflow-hidden">
-			{/* Single Screen Layout */}
-			<div className="h-full relative">
-				{/* Animated Background */}
-				<div className="absolute inset-0">
-					<div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
-
-					{/* Dynamic Grid */}
-					<div className="absolute inset-0 opacity-10">
-						<div
-							className="absolute inset-0"
-							style={{
-								backgroundImage: `
-                     linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                     linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)
-                   `,
-								backgroundSize: '50px 50px',
-							}}
-						/>
-					</div>
-
-					{/* Floating Particles */}
-					{[...Array(12)].map((_, i) => (
-						<motion.div
-							key={i}
-							className="absolute w-1 h-1 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full"
-							style={{
-								left: `${Math.random() * 100}%`,
-								top: `${Math.random() * 100}%`,
-							}}
-							animate={{
-								y: [-15, 15, -15],
-								opacity: [0, 0.8, 0],
-								scale: [0, 1, 0],
-							}}
-							transition={{
-								duration: Math.random() * 4 + 3,
-								repeat: Infinity,
-								delay: Math.random() * 2,
-							}}
-						/>
-					))}
+		<div className="min-h-screen bg-black text-white">
+			{/* Netflix/Apple Style - Full Background Video Effect */}
+			<div className="fixed inset-0 z-0">
+				{/* Dynamic Mesh Gradient Background */}
+				<div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-black to-zinc-900" />
+				
+				{/* Animated Mesh Grid */}
+				<div className="absolute inset-0 opacity-[0.03]">
+					<motion.div
+						className="w-full h-full"
+						style={{
+							backgroundImage: `
+								radial-gradient(circle at 25% 25%, #fbbf24 0%, transparent 50%),
+								radial-gradient(circle at 75% 75%, #f59e0b 0%, transparent 50%),
+								linear-gradient(45deg, transparent 40%, rgba(251, 191, 36, 0.1) 50%, transparent 60%)
+							`,
+						}}
+						animate={{
+							backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'],
+						}}
+						transition={{
+							duration: 20,
+							repeat: Infinity,
+							ease: "linear"
+						}}
+					/>
 				</div>
 
-				{/* Content Container */}
-				<div className="relative z-10 h-full flex items-center">
-					<div className="w-full max-w-7xl mx-auto px-6">
-						<div className="grid lg:grid-cols-2 gap-16 items-center">
-							{/* Left Side - Brand */}
+				{/* Floating Orbs */}
+				{[...Array(5)].map((_, i) => (
+					<motion.div
+						key={i}
+						className="absolute rounded-full bg-gradient-to-r from-amber-400/10 to-yellow-500/10 blur-xl"
+						style={{
+							width: `${Math.random() * 300 + 100}px`,
+							height: `${Math.random() * 300 + 100}px`,
+							left: `${Math.random() * 100}%`,
+							top: `${Math.random() * 100}%`,
+						}}
+						animate={{
+							x: [0, Math.random() * 100 - 50],
+							y: [0, Math.random() * 100 - 50],
+							scale: [1, 1.2, 1],
+							opacity: [0.1, 0.3, 0.1],
+						}}
+						transition={{
+							duration: Math.random() * 10 + 10,
+							repeat: Infinity,
+							ease: "easeInOut",
+						}}
+					/>
+				))}
+			</div>
+
+			{/* Content Layer */}
+			<div className="relative z-10 min-h-screen flex">
+				{/* Left: Minimal Brand (30%) */}
+				<div className="w-full lg:w-2/5 flex flex-col justify-between p-8 lg:p-16">
+					{/* Top: Logo */}
+					<motion.div
+						initial={{ opacity: 0, x: -30 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+					>
+						<div className="flex items-center space-x-3">
 							<motion.div
-								initial={{ opacity: 0, x: -100 }}
-								animate={{ opacity: 1, x: 0 }}
-								transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-								className="text-left"
+								className="p-3 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl shadow-2xl"
+								whileHover={{ scale: 1.05, rotate: 3 }}
+								transition={{ type: "spring", stiffness: 300 }}
 							>
-								{/* Logo */}
+								<Crown size={32} className="text-black" />
+							</motion.div>
+							<div>
+								<h1 className="text-3xl font-black">
+									<span className="text-white">Royal</span>
+									<span className="text-amber-400">Cuts</span>
+								</h1>
+								<p className="text-amber-400/80 text-sm font-bold tracking-wider">
+									LUXURY REDEFINED
+								</p>
+							</div>
+						</div>
+					</motion.div>
+
+					{/* Center: Hero Text */}
+					<motion.div
+						className="flex-1 flex flex-col justify-center"
+						initial={{ opacity: 0, y: 40 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+					>
+						<h2 className="text-4xl lg:text-6xl font-black mb-6 leading-tight">
+							<span className="block text-white">Where</span>
+							<span className="block bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
+								Excellence
+							</span>
+							<span className="block text-white">Meets Art</span>
+						</h2>
+						
+						<p className="text-xl text-zinc-300 leading-relaxed max-w-md mb-8">
+							Join the revolution in luxury grooming. Where every visit is an experience, 
+							every cut is precision, every detail matters.
+						</p>
+
+						{/* Social Proof */}
+						<div className="flex items-center space-x-6">
+							<div className="flex items-center space-x-2">
+								<div className="flex -space-x-2">
+									{[1,2,3].map(i => (
+										<div key={i} className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full border-2 border-black" />
+									))}
+								</div>
+								<span className="text-sm text-zinc-400">2,500+ Elite Members</span>
+							</div>
+							<div className="flex items-center space-x-1">
+								{[1,2,3,4,5].map(i => (
+									<div key={i} className="w-4 h-4 bg-amber-400 rounded-full" />
+								))}
+								<span className="text-sm text-zinc-400 ml-2">Perfect Rating</span>
+							</div>
+						</div>
+					</motion.div>
+
+					{/* Bottom: Trust Badges */}
+					<motion.div
+						className="grid grid-cols-3 gap-4"
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 1, delay: 0.8 }}
+					>
+						<div className="text-center p-4 bg-white/5 rounded-xl backdrop-blur-sm">
+							<div className="text-2xl font-black text-amber-400">24/7</div>
+							<div className="text-xs text-zinc-400">Available</div>
+						</div>
+						<div className="text-center p-4 bg-white/5 rounded-xl backdrop-blur-sm">
+							<div className="text-2xl font-black text-amber-400">500+</div>
+							<div className="text-xs text-zinc-400">Masters</div>
+						</div>
+						<div className="text-center p-4 bg-white/5 rounded-xl backdrop-blur-sm">
+							<div className="text-2xl font-black text-amber-400">∞</div>
+							<div className="text-xs text-zinc-400">Possibilities</div>
+						</div>
+					</motion.div>
+				</div>
+
+				{/* Right: Premium Form (70%) */}
+				<div className="hidden lg:flex w-3/5 items-center justify-center p-16">
+					<motion.div
+						className="w-full max-w-md"
+						initial={{ opacity: 0, scale: 0.9 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 1.2, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+					>
+						{/* Glass Morphism Card */}
+						<div className="relative">
+							{/* Glow Effect */}
+							<div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 rounded-3xl blur-lg" />
+							
+							{/* Main Card */}
+							<div className="relative bg-white/[0.08] backdrop-blur-2xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+								{/* Form Header */}
 								<motion.div
-									className="flex items-center space-x-4 mb-12"
-									initial={{ opacity: 0, y: 30 }}
+									className="text-center mb-8"
+									initial={{ opacity: 0, y: -15 }}
 									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.8, delay: 0.3 }}
+									transition={{ duration: 0.8, delay: 0.6 }}
 								>
-									<motion.div
-										className="relative p-3 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-2xl"
-										whileHover={{ scale: 1.1, rotate: 5 }}
-										transition={{ type: 'spring', stiffness: 300 }}
-									>
-										<Crown size={32} className="text-black" />
-										<motion.div
-											className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"
-											animate={{ scale: [1, 1.5, 1] }}
-											transition={{ duration: 2, repeat: Infinity }}
-										/>
-									</motion.div>
-									<div>
-										<h1 className="text-2xl font-black">
-											<span className="text-white">Royal</span>
-											<span className="text-amber-400">Cuts</span>
-										</h1>
-										<p className="text-amber-400/80 text-xs font-bold tracking-widest">
-											PREMIUM GROOMING
-										</p>
-									</div>
+									<h3 className="text-2xl font-black text-white mb-2">{title}</h3>
+									<p className="text-zinc-400">{subtitle}</p>
 								</motion.div>
 
-								{/* Main Headline */}
+								{/* Form Content */}
 								<motion.div
-									initial={{ opacity: 0, y: 50 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 1, delay: 0.5 }}
-								>
-									<h2 className="text-7xl font-black mb-8 leading-none">
-										<span className="block text-white">Where</span>
-										<span className="block bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
-											Masters
-										</span>
-										<span className="block text-white">Create</span>
-									</h2>
-
-									<p className="text-xl text-zinc-400 leading-relaxed mb-12 max-w-lg">
-										Step into the future of luxury grooming. Where every cut is a
-										masterpiece, every detail perfected, every experience
-										extraordinary.
-									</p>
-								</motion.div>
-
-								{/* Features */}
-								<motion.div
-									className="grid grid-cols-3 gap-8"
-									initial={{ opacity: 0, y: 30 }}
+									initial={{ opacity: 0, y: 15 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ duration: 0.8, delay: 0.8 }}
 								>
-									<div className="text-center">
-										<div className="text-3xl font-black text-amber-400 mb-2">
-											24/7
-										</div>
-										<div className="text-sm text-zinc-400">Available</div>
-									</div>
-									<div className="text-center">
-										<div className="text-3xl font-black text-amber-400 mb-2">
-											500+
-										</div>
-										<div className="text-sm text-zinc-400">Masters</div>
-									</div>
-									<div className="text-center">
-										<div className="text-3xl font-black text-amber-400 mb-2">
-											5.0★
-										</div>
-										<div className="text-sm text-zinc-400">Rating</div>
-									</div>
+									{children}
 								</motion.div>
-							</motion.div>
-
-							{/* Right Side - Form */}
-							<motion.div
-								initial={{ opacity: 0, x: 100 }}
-								animate={{ opacity: 1, x: 0 }}
-								transition={{
-									duration: 1.2,
-									ease: [0.16, 1, 0.3, 1],
-									delay: 0.2,
-								}}
-								className="relative"
-							>
-								{/* Glow Effect */}
-								<div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 rounded-3xl blur-3xl" />
-
-								{/* Form Container */}
-								<div className="relative bg-zinc-900/80 backdrop-blur-2xl border border-zinc-800 rounded-3xl p-12 shadow-2xl">
-									{/* Form Header */}
-									<motion.div
-										className="text-center mb-10"
-										initial={{ opacity: 0, y: -20 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ duration: 0.6, delay: 0.4 }}
-									>
-										<h3 className="text-2xl font-black text-white mb-3">{title}</h3>
-										<p className="text-zinc-400">{subtitle}</p>
-									</motion.div>
-
-									{/* Form Content */}
-									<motion.div
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{ duration: 0.6, delay: 0.6 }}
-									>
-										{children}
-									</motion.div>
-								</div>
-							</motion.div>
+							</div>
 						</div>
-					</div>
+					</motion.div>
+				</div>
+
+				{/* Mobile Form Overlay */}
+				<div className="lg:hidden fixed inset-0 z-20 flex items-end">
+					<motion.div
+						className="w-full bg-zinc-900/95 backdrop-blur-2xl border-t border-zinc-700 rounded-t-3xl p-6"
+						initial={{ y: "100%" }}
+						animate={{ y: 0 }}
+						transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+					>
+						<div className="text-center mb-6">
+							<h3 className="text-xl font-black text-white mb-2">{title}</h3>
+							<p className="text-zinc-400 text-sm">{subtitle}</p>
+						</div>
+						{children}
+					</motion.div>
 				</div>
 			</div>
 		</div>
@@ -183,4 +208,3 @@ const AuthLayout = ({ children, title, subtitle }) => {
 };
 
 export default AuthLayout;
-	
