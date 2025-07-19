@@ -28,6 +28,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/shops', require('./routes/shops'));
+app.use('/api/service-templates', require('./routes/serviceTemplates'));
 app.use('/api/specialties', require('./routes/specialties'));
 app.use('/api/services', require('./routes/services'));
 app.use('/api/working-hours', require('./routes/workingHours'));

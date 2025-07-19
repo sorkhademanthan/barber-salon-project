@@ -1,68 +1,78 @@
 const Booking = require('../models/Booking');
+const Shop = require('../models/Shop');
 const { asyncHandler, ErrorResponse } = require('./errorHandler');
 
 // Check if user is the customer of the booking
 const isBookingCustomer = asyncHandler(async (req, res, next) => {
-    const bookingId = req.params.id;
-    
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(req.params.id);
     
     if (!booking) {
         return next(new ErrorResponse('Booking not found', 404));
     }
     
-    // Check if current user is the customer of this booking
-    if (booking.customer.toString() !== req.user.id) {
+    if (booking.customerId.toString() !== req.user.id && req.user.role !== 'admin') {
         return next(new ErrorResponse('Not authorized to access this booking', 403));
     }
     
-    // Attach booking to request for use in controller
     req.booking = booking;
     next();
 });
 
 // Check if user is the barber of the booking
 const isBookingBarber = asyncHandler(async (req, res, next) => {
-    const bookingId = req.params.id;
-    
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(req.params.id);
     
     if (!booking) {
         return next(new ErrorResponse('Booking not found', 404));
     }
     
-    // Check if current user is the barber of this booking
-    if (booking.barber.toString() !== req.user.id) {
+    // Check if user is the barber or shop owner
+    if (req.user.role === 'barber') {
+        const shop = await Shop.findOne({ ownerId: req.user.id });
+        if (!shop || booking.shopId.toString() !== shop._id.toString()) {
+            return next(new ErrorResponse('Not authorized to access this booking', 403));
+        }
+    } else if (req.user.role !== 'admin') {
         return next(new ErrorResponse('Not authorized to access this booking', 403));
     }
     
-    // Attach booking to request for use in controller
     req.booking = booking;
     next();
 });
 
-// Check if user is either customer or barber of the booking
+// Check if user is participant in the booking (customer or barber)
 const isBookingParticipant = asyncHandler(async (req, res, next) => {
-    const bookingId = req.params.id;
-    
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(req.params.id);
     
     if (!booking) {
         return next(new ErrorResponse('Booking not found', 404));
     }
     
-    // Check if current user is either customer or barber of this booking
-    const isCustomer = booking.customer.toString() === req.user.id;
-    const isBarber = booking.barber.toString() === req.user.id;
-    const isAdmin = req.user.role === 'admin';
+    let hasAccess = false;
     
-    if (!isCustomer && !isBarber && !isAdmin) {
+    // Customer access
+    if (req.user.role === 'customer' && booking.customerId.toString() === req.user.id) {
+        hasAccess = true;
+    }
+    
+    // Barber access
+    if (req.user.role === 'barber') {
+        const shop = await Shop.findOne({ ownerId: req.user.id });
+        if (shop && booking.shopId.toString() === shop._id.toString()) {
+            hasAccess = true;
+        }
+    }
+    
+    // Admin access
+    if (req.user.role === 'admin') {
+        hasAccess = true;
+    }
+    
+    if (!hasAccess) {
         return next(new ErrorResponse('Not authorized to access this booking', 403));
     }
     
-    // Attach booking and user role in booking to request
     req.booking = booking;
-    req.userRoleInBooking = isCustomer ? 'customer' : isBarber ? 'barber' : 'admin';
     next();
 });
 

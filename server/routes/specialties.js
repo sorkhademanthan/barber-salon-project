@@ -6,7 +6,7 @@ const {
     updateSpecialty,
     deleteSpecialty
 } = require('../controllers/specialtyController');
-const { protect, checkRole } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -26,9 +26,9 @@ const specialtyValidation = [
 // Public routes
 router.get('/', getSpecialties);
 
-// Admin only routes
-router.post('/', protect, checkRole('admin'), specialtyValidation, createSpecialty);
-router.put('/:id', protect, checkRole('admin'), specialtyValidation, updateSpecialty);
-router.delete('/:id', protect, checkRole('admin'), deleteSpecialty);
+// Protected routes (Admin only)
+router.post('/', protect, authorize('admin'), specialtyValidation, createSpecialty);
+router.put('/:id', protect, authorize('admin'), specialtyValidation, updateSpecialty);
+router.delete('/:id', protect, authorize('admin'), deleteSpecialty);
 
 module.exports = router;

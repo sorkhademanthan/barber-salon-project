@@ -3,19 +3,21 @@ const mongoose = require('mongoose');
 const specialtySchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Specialty name is required'],
+        required: true,
         unique: true,
-        trim: true,
-        maxlength: [50, 'Specialty name cannot exceed 50 characters']
+        trim: true
     },
     description: {
         type: String,
-        trim: true,
-        maxlength: [200, 'Description cannot exceed 200 characters']
+        trim: true
+    },
+    category: {
+        type: String,
+        enum: ['Hair', 'Beard', 'Styling', 'Treatment', 'Package'],
+        default: 'Hair'
     },
     icon: {
-        type: String,
-        default: '✂️'
+        type: String // Icon name or URL
     },
     isActive: {
         type: Boolean,
@@ -24,8 +26,5 @@ const specialtySchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-
-// Index for better search performance
-specialtySchema.index({ name: 'text', description: 'text' });
 
 module.exports = mongoose.model('Specialty', specialtySchema);

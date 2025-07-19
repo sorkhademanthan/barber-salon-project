@@ -4,12 +4,16 @@ const shopSchema = new mongoose.Schema({
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    unique: true // One shop per owner
+    required: true
+    // Remove 'unique: true' since we're indexing it below
   },
   name: {
     type: String,
     required: true,
+    trim: true
+  },
+  description: {
+    type: String,
     trim: true
   },
   address: {
@@ -28,6 +32,10 @@ const shopSchema = new mongoose.Schema({
     zipCode: {
       type: String,
       required: true
+    },
+    coordinates: {
+      type: [Number]
+      // Remove the index: '2dsphere' from here
     }
   },
   contact: {
@@ -48,8 +56,20 @@ const shopSchema = new mongoose.Schema({
     ref: 'Service'
   }],
   barbers: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    specialties: [{
+      type: String,
+      enum: ['haircut', 'beard', 'shave', 'styling', 'coloring']
+    }],
+    experience: Number
   }],
   workingHours: {
     monday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
@@ -60,109 +80,95 @@ const shopSchema = new mongoose.Schema({
     saturday: { start: String, end: String, isOpen: { type: Boolean, default: true } },
     sunday: { start: String, end: String, isOpen: { type: Boolean, default: false } }
   },
+  currentQueue: {
+    count: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    estimatedWaitTime: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  features: [{
+    type: String,
+    enum: ['wifi', 'parking', 'card_payment', 'cash_only', 'appointments', 'walk_ins', 'ac', 'upi', 'waiting_area', 'tv']
+  }],
+  bookingSettings: {
+    allowOnlineBooking: {
+      type: Boolean,
+      default: true
+    },
+    maxAdvanceBookingDays: {
+      type: Number,
+      default: 7,
+      min: 1,
+      max: 30
+    },
+    slotDuration: {
+      type: Number,
+      default: 30,
+      min: 15,
+      max: 60
+    },
+    bufferTime: {
+      type: Number,
+      default: 5,
+      min: 0,
+      max: 30
+    }
+  },
+  socialMedia: {
+    instagram: String,
+    facebook: String,
+    website: String
+  },
+  rating: {
+    average: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    count: {
+      type: Number,
+      default: 0
+    }
+  },
   status: {
     type: String,
     enum: ['pending', 'active', 'suspended'],
     default: 'pending'
   },
+  verificationStatus: {
+    type: String,
+    enum: ['pending', 'verified', 'rejected'],
+    default: 'pending'
+  },
   isSetupComplete: {
     type: Boolean,
     default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true
 });
 
-// Index for performance
-shopSchema.index({ ownerId: 1 });
-shopSchema.index({ 'address.city': 1 });
-shopSchema.index({ status: 1 });
-
-module.exports = mongoose.model('Shop', shopSchema);
-    }],
-    barbers: [{
-        user: {
-            type: mongoose.Schema.ObjectId,
-            ref: 'User',
-            required: true
-        },
-        isActive: {
-            type: Boolean,
-            default: true
-        },
-        specialties: [{
-            type: String,
-            enum: ['haircut', 'beard', 'shave', 'styling', 'coloring']
-        }],
-        experience: Number
-    }],
-    currentQueue: {
-        count: {
-            type: Number,
-            default: 0,
-            min: 0
-        },
-        estimatedWaitTime: {
-            type: Number,
-            default: 0,
-            min: 0
-        },
-        lastUpdated: {
-            type: Date,
-            default: Date.now
-        }
-    },
-    features: [{
-        type: String,
-        enum: ['wifi', 'parking', 'card_payment', 'cash_only', 'appointments', 'walk_ins', 'ac', 'upi', 'waiting_area', 'tv']
-    }],
-    bookingSettings: {
-        allowOnlineBooking: {
-            type: Boolean,
-            default: true
-        },
-        maxAdvanceBookingDays: {
-            type: Number,
-            default: 7,
-            min: 1,
-            max: 30
-        },
-        slotDuration: {
-            type: Number,
-            default: 30,
-            min: 15,
-            max: 60
-        },
-        bufferTime: {
-            type: Number,
-            default: 5,
-            min: 0,
-            max: 30
-        }
-    },
-    socialMedia: {
-        instagram: String,
-        facebook: String,
-        website: String
-    },
-    verificationStatus: {
-        type: String,
-        enum: ['pending', 'verified', 'rejected'],
-        default: 'pending'
-    },
-    isActive: {
-        type: Boolean,
-        default: true
-    }
-}, {
-    timestamps: true
-});
-
-// Index for better search performance
+// Indexes for performance - keep only one ownerId index
+shopSchema.index({ ownerId: 1 }, { unique: true });
 shopSchema.index({ name: 'text', description: 'text' });
 shopSchema.index({ 'address.city': 1 });
 shopSchema.index({ 'rating.average': -1 });
-shopSchema.index({ 'address.coordinates': '2dsphere' });
+shopSchema.index({ status: 1 });
 
 // Virtual for full address
 shopSchema.virtual('fullAddress').get(function() {
@@ -178,9 +184,9 @@ shopSchema.methods.isOpenNow = function() {
     
     const daySchedule = this.workingHours[dayName];
     
-    if (daySchedule.closed) return false;
+    if (!daySchedule.isOpen) return false;
     
-    return currentTime >= daySchedule.open && currentTime <= daySchedule.close;
+    return currentTime >= daySchedule.start && currentTime <= daySchedule.end;
 };
 
 // Update queue method
@@ -208,4 +214,3 @@ shopSchema.methods.minutesToTime = function(minutes) {
 shopSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Shop', shopSchema);
- 

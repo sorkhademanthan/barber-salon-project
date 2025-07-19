@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const Shop = require('../models/Shop');
 const User = require('../models/User');
+const Service = require('../models/Service');
 const { asyncHandler, ErrorResponse } = require('../middleware/errorHandler');
 
 // @desc    Get all shops
@@ -26,7 +27,7 @@ const getShops = asyncHandler(async (req, res, next) => {
     
     try {
         const shops = await Shop.find(query)
-            .populate('owner', 'name email')
+            .populate('ownerId', 'name email')
             .populate('barbers.user', 'name specialties experience')
             .sort({ 'rating.average': -1 })
             .limit(limit * 1)
@@ -57,7 +58,7 @@ const getShops = asyncHandler(async (req, res, next) => {
 const getShop = asyncHandler(async (req, res, next) => {
     try {
         const shop = await Shop.findById(req.params.id)
-            .populate('owner', 'name email phone');
+            .populate('ownerId', 'name email phone');
         
         if (!shop || !shop.isActive) {
             return next(new ErrorResponse('Shop not found', 404));
@@ -93,7 +94,7 @@ const createShop = asyncHandler(async (req, res, next) => {
     
     // Check if user already has a shop (barbers can only have one shop)
     if (req.user.role === 'barber') {
-        const existingShop = await Shop.findOne({ owner: req.user.id, isActive: true });
+        const existingShop = await Shop.findOne({ ownerId: req.user.id, isActive: true });
         
         if (existingShop) {
             console.log('❌ User already has shop:', existingShop._id);
@@ -111,11 +112,33 @@ const createShop = asyncHandler(async (req, res, next) => {
         }
     }
     
-    // Add owner to shop data
-    req.body.owner = req.user.id;
+    // Extract services from request body
+    const { services, ...shopData } = req.body;
+    
+    // Add ownerId to shop data
+    shopData.ownerId = req.user.id;
     
     console.log('✅ Creating new shop...');
-    const shop = await Shop.create(req.body);
+    const shop = await Shop.create(shopData);
+    
+    // Create services for the shop if provided
+    if (services && services.length > 0) {
+        console.log('🛠️ Creating services for shop...');
+        const servicePromises = services.map(service => 
+            Service.create({
+                ...service,
+                shopId: shop._id
+            })
+        );
+        
+        const createdServices = await Promise.all(servicePromises);
+        
+        // Update shop with service references
+        shop.services = createdServices.map(service => service._id);
+        await shop.save();
+        
+        console.log(`✅ Created ${createdServices.length} services`);
+    }
     
     // Update user's shop reference
     await User.findByIdAndUpdate(req.user.id, { shop: shop._id });
@@ -123,7 +146,8 @@ const createShop = asyncHandler(async (req, res, next) => {
     
     try {
         const populatedShop = await Shop.findById(shop._id)
-            .populate('owner', 'name email');
+            .populate('ownerId', 'name email')
+            .populate('services');
         
         res.status(201).json({
             success: true,
@@ -144,8 +168,8 @@ const createShop = asyncHandler(async (req, res, next) => {
 // @route   GET /api/shops/my-shop
 // @access  Private (Barber only)
 const getMyShop = asyncHandler(async (req, res, next) => {
-    const shop = await Shop.findOne({ owner: req.user.id, isActive: true })
-        .populate('owner', 'name email phone');
+    const shop = await Shop.findOne({ ownerId: req.user.id, isActive: true })
+        .populate('ownerId', 'name email phone');
     
     if (!shop) {
         return next(new ErrorResponse('You do not have a shop registered', 404));
@@ -181,12 +205,12 @@ const updateShop = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Shop not found', 404));
     }
     
-    console.log('Shop Owner ID:', shop.owner.toString());
-    console.log('Owner Match:', shop.owner.toString() === req.user.id);
+    console.log('Shop Owner ID:', shop.ownerId.toString());
+    console.log('Owner Match:', shop.ownerId.toString() === req.user.id);
     console.log('Is Admin:', req.user.role === 'admin');
     
-    // Check if user is owner or admin
-    if (shop.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Check if user is ownerId or admin
+    if (shop.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
         console.log('❌ Authorization failed');
         return next(new ErrorResponse('Not authorized to update this shop', 403));
     }
@@ -194,7 +218,7 @@ const updateShop = asyncHandler(async (req, res, next) => {
     console.log('✅ Authorization passed');
     
     // Remove fields that shouldn't be updated
-    delete req.body.owner;
+    delete req.body.ownerId;
     delete req.body.rating;
     
     shop = await Shop.findByIdAndUpdate(req.params.id, req.body, {
@@ -203,7 +227,7 @@ const updateShop = asyncHandler(async (req, res, next) => {
     });
     
     try {
-        const populatedShop = await shop.populate('owner', 'name email');
+        const populatedShop = await shop.populate('ownerId', 'name email');
         
         res.status(200).json({
             success: true,
@@ -230,8 +254,8 @@ const deleteShop = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Shop not found', 404));
     }
     
-    // Check if user is owner or admin
-    if (shop.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Check if user is ownerId or admin
+    if (shop.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
         return next(new ErrorResponse('Not authorized to delete this shop', 403));
     }
     
@@ -239,7 +263,7 @@ const deleteShop = asyncHandler(async (req, res, next) => {
     await Shop.findByIdAndUpdate(req.params.id, { isActive: false });
     
     // Remove shop reference from user
-    await User.findByIdAndUpdate(shop.owner, { $unset: { shop: 1 } });
+    await User.findByIdAndUpdate(shop.ownerId, { $unset: { shop: 1 } });
     
     res.status(200).json({
         success: true,
@@ -305,7 +329,7 @@ const getFavoriteShops = asyncHandler(async (req, res, next) => {
             match: { isActive: true },
             select: 'name address rating images contact workingHours',
             populate: {
-                path: 'owner',
+                path: 'ownerId',
                 select: 'name'
             }
         });
@@ -314,6 +338,131 @@ const getFavoriteShops = asyncHandler(async (req, res, next) => {
         success: true,
         count: user.favoriteShops.length,
         data: user.favoriteShops
+    });
+});
+
+// @desc    Get shop services
+// @route   GET /api/shops/:id/services
+// @access  Public
+const getShopServices = asyncHandler(async (req, res, next) => {
+    const shop = await Shop.findById(req.params.id);
+    
+    if (!shop || !shop.isActive) {
+        return next(new ErrorResponse('Shop not found', 404));
+    }
+    
+    const services = await Service.find({ 
+        shopId: req.params.id, 
+        isActive: true 
+    }).sort({ category: 1, name: 1 });
+    
+    res.status(200).json({
+        success: true,
+        count: services.length,
+        data: services
+    });
+});
+
+// @desc    Add service to shop
+// @route   POST /api/shops/:id/services
+// @access  Private (Shop Owner/Admin only)
+const addShopService = asyncHandler(async (req, res, next) => {
+    const shop = await Shop.findById(req.params.id);
+    
+    if (!shop) {
+        return next(new ErrorResponse('Shop not found', 404));
+    }
+    
+    // Check if user is shop owner or admin
+    if (shop.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponse('Not authorized to add services to this shop', 403));
+    }
+    
+    const serviceData = {
+        ...req.body,
+        shopId: req.params.id
+    };
+    
+    const service = await Service.create(serviceData);
+    
+    // Add service reference to shop
+    shop.services.push(service._id);
+    await shop.save();
+    
+    res.status(201).json({
+        success: true,
+        message: 'Service added successfully',
+        data: service
+    });
+});
+
+// @desc    Update shop service
+// @route   PUT /api/shops/:shopId/services/:serviceId
+// @access  Private (Shop Owner/Admin only)
+const updateShopService = asyncHandler(async (req, res, next) => {
+    const shop = await Shop.findById(req.params.shopId);
+    
+    if (!shop) {
+        return next(new ErrorResponse('Shop not found', 404));
+    }
+    
+    // Check if user is shop owner or admin
+    if (shop.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponse('Not authorized to update services for this shop', 403));
+    }
+    
+    const service = await Service.findOneAndUpdate(
+        { _id: req.params.serviceId, shopId: req.params.shopId },
+        req.body,
+        { new: true, runValidators: true }
+    );
+    
+    if (!service) {
+        return next(new ErrorResponse('Service not found', 404));
+    }
+    
+    res.status(200).json({
+        success: true,
+        message: 'Service updated successfully',
+        data: service
+    });
+});
+
+// @desc    Delete shop service
+// @route   DELETE /api/shops/:shopId/services/:serviceId
+// @access  Private (Shop Owner/Admin only)
+const deleteShopService = asyncHandler(async (req, res, next) => {
+    const shop = await Shop.findById(req.params.shopId);
+    
+    if (!shop) {
+        return next(new ErrorResponse('Shop not found', 404));
+    }
+    
+    // Check if user is shop owner or admin
+    if (shop.ownerId.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponse('Not authorized to delete services from this shop', 403));
+    }
+    
+    // Soft delete - set isActive to false
+    const service = await Service.findOneAndUpdate(
+        { _id: req.params.serviceId, shopId: req.params.shopId },
+        { isActive: false },
+        { new: true }
+    );
+    
+    if (!service) {
+        return next(new ErrorResponse('Service not found', 404));
+    }
+    
+    // Remove service reference from shop
+    shop.services = shop.services.filter(
+        serviceId => serviceId.toString() !== req.params.serviceId
+    );
+    await shop.save();
+    
+    res.status(200).json({
+        success: true,
+        message: 'Service deleted successfully'
     });
 });
 
@@ -326,5 +475,9 @@ module.exports = {
     addToFavorites,
     removeFromFavorites,
     getFavoriteShops,
-    getMyShop
+    getMyShop,
+    getShopServices,
+    addShopService,
+    updateShopService,
+    deleteShopService
 };

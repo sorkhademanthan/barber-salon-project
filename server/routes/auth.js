@@ -12,7 +12,7 @@ const {
   verifyEmail,
   resendVerification
 } = require('../controllers/authController');
-const { protect, authenticateToken } = require('../middleware/auth');
+const { protect, authenticateToken, authorize } = require('../middleware/auth');
 const { upload } = require('../middleware/upload');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -177,5 +177,63 @@ router.put('/me', protect, updateProfileValidation, updateProfile);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePasswordValidation, changePassword);
 router.put('/avatar', protect, upload.single('avatar'), uploadAvatar);
+
+// Shop Owner Registration (integrated into main auth)
+router.post('/shop-register', [
+  body('ownerName')
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage('Owner name must be at least 2 characters'),
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+  body('phone')
+    .matches(/^[6-9]\d{9}$/)
+    .withMessage('Please provide a valid Indian phone number'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters'),
+  body('shopName')
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage('Shop name must be at least 2 characters')
+], async (req, res) => {
+    try {
+        const { ownerName, email, password, phone, shopName, ...shopData } = req.body;
+
+        // Check if user exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Create barber user
+        const user = new User({ 
+            name: ownerName, 
+            email, 
+            password, 
+            phone, 
+            role: 'barber' 
+        });
+        await user.save();
+
+        const token = generateToken(user._id);
+
+        res.status(201).json({
+            message: 'Shop owner registered successfully',
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            },
+            needsShopSetup: true
+        });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
 
 module.exports = router;

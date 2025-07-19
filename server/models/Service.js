@@ -46,14 +46,3 @@ serviceSchema.index({ shopId: 1, category: 1 });
 serviceSchema.index({ shopId: 1, isActive: 1 });
 
 module.exports = mongoose.model('Service', serviceSchema);
-}, {
-    timestamps: true
-});
-
-// Index for better performance
-serviceSchema.index({ shop: 1, category: 1 });
-serviceSchema.index({ name: 'text', description: 'text' });
-serviceSchema.index({ price: 1 });
-serviceSchema.index({ popularity: -1 });
-
-module.exports = mongoose.model('Service', serviceSchema);

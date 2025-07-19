@@ -1,59 +1,61 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 const { asyncHandler, ErrorResponse } = require('./errorHandler');
+const User = require('../models/User');
 
 // Protect routes - verify JWT token
 const protect = asyncHandler(async (req, res, next) => {
-    let token;
+  let token;
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        token = req.headers.authorization.split(' ')[1];
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(new ErrorResponse('Not authorized to access this route', 401));
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return next(new ErrorResponse('No user found with this token', 401));
     }
 
-    if (!token) {
-        return next(new ErrorResponse('Not authorized to access this route', 401));
+    if (!user.isActive) {
+      return next(new ErrorResponse('User account is deactivated', 401));
     }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.userId);
-        
-        if (!req.user) {
-            return next(new ErrorResponse('No user found with this token', 401));
-        }
-
-        if (!req.user.isActive) {
-            return next(new ErrorResponse('User account is deactivated', 401));
-        }
-
-        next();
-    } catch (error) {
-        return next(new ErrorResponse('Not authorized to access this route', 401));
-    }
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Token verification error:', error);
+    return next(new ErrorResponse('Not authorized to access this route', 401));
+  }
 });
 
-// Check user roles
-const checkRole = (...roles) => {
-    return (req, res, next) => {
-        console.log('🔍 Role check:', {
-            userRole: req.user.role,
-            allowedRoles: roles,
-            hasAccess: roles.includes(req.user.role)
-        });
-        
-        if (!roles.includes(req.user.role)) {
-            return next(
-                new ErrorResponse(
-                    `User role ${req.user.role} is not authorized to access this route`,
-                    403
-                )
-            );
-        }
-        next();
-    };
+// Authorize specific roles
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    console.log('🔍 Role check:', {
+      userRole: req.user.role,
+      allowedRoles: roles,
+      hasAccess: roles.includes(req.user.role)
+    });
+
+    if (!roles.includes(req.user.role)) {
+      return next(new ErrorResponse(`Role ${req.user.role} is not authorized to access this route`, 403));
+    }
+    next();
+  };
 };
 
-// Legacy compatibility
+// Alternative function name for compatibility
 const authenticateToken = protect;
 
-module.exports = { protect, checkRole, authenticateToken };
+module.exports = {
+  protect,
+  authorize,
+  checkRole: authorize, // Add this alias for backward compatibility
+  authenticateToken
+};

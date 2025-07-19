@@ -1,12 +1,12 @@
 const express = require('express');
-const { body, param } = require('express-validator');
+const { body } = require('express-validator');
 const {
     generateSlots,
     getAvailableSlots,
     getShopSlots,
     toggleSlotBlock
 } = require('../controllers/slotController');
-const { protect, checkRole } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -28,32 +28,15 @@ const generateSlotsValidation = [
         .withMessage('Shop ID must be valid')
 ];
 
-const dateParamValidation = [
-    param('date')
-        .matches(/^\d{4}-\d{2}-\d{2}$/)
-        .withMessage('Date must be in YYYY-MM-DD format')
-];
-
-const blockSlotValidation = [
-    body('block')
-        .optional()
-        .isBoolean()
-        .withMessage('Block must be a boolean value'),
-    body('reason')
-        .optional()
-        .isLength({ max: 200 })
-        .withMessage('Reason cannot exceed 200 characters')
-];
-
 // Public routes
-router.get('/available/:barberId/:date', dateParamValidation, getAvailableSlots);
-router.get('/shop/:shopId/:date', dateParamValidation, getShopSlots);
+router.get('/available/:barberId/:date', getAvailableSlots);
+router.get('/shop/:shopId/:date', getShopSlots);
 
 // Protected routes
 router.use(protect);
 
 // Barber/Admin routes
-router.post('/generate', checkRole('barber', 'admin'), generateSlotsValidation, generateSlots);
-router.put('/:slotId/block', checkRole('barber', 'admin'), blockSlotValidation, toggleSlotBlock);
+router.post('/generate', authorize('barber', 'admin'), generateSlotsValidation, generateSlots);
+router.put('/:slotId/block', authorize('barber', 'admin'), toggleSlotBlock);
 
 module.exports = router;
