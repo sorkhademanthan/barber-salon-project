@@ -31,7 +31,7 @@ const CustomerDashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const [bookingsRes] = await Promise.all([
-        api.get('/bookings/customer'),
+        api.get('/bookings/my-bookings'),
       ]);
 
       const bookings = bookingsRes.data.data;

@@ -5,6 +5,9 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/layout/Navbar';
 
+// Landing Page
+import LandingPage from './pages/LandingPage';
+
 // Auth Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -57,7 +60,10 @@ function App() {
       >
         <div className="min-h-screen bg-gradient-primary">
           <Routes>
-            {/* Public Routes */}
+            {/* Landing Page - Public */}
+            <Route path="/" element={<LandingPage />} />
+            
+            {/* Auth Routes - Public */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/shop-register" element={<ShopOwnerRegister />} />
@@ -107,8 +113,8 @@ function App() {
                       <Route path="/unauthorized" element={<Unauthorized />} />
                       <Route path="/404" element={<NotFound />} />
                       
-                      {/* Redirects */}
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      {/* Redirects for authenticated users */}
+                      <Route path="/home" element={<Navigate to="/dashboard" replace />} />
                       <Route path="*" element={<Navigate to="/404" replace />} />
                     </Routes>
                   </main>

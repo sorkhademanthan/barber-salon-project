@@ -72,6 +72,7 @@ const Register = () => {
           placeholder="Enter your full name"
           icon={User}
           error={errors.name}
+          autoComplete="name"
           required
         />
 
@@ -84,6 +85,7 @@ const Register = () => {
           placeholder="Enter your email"
           icon={Mail}
           error={errors.email}
+          autoComplete="email"
           required
         />
 
@@ -95,6 +97,7 @@ const Register = () => {
           placeholder="Enter your phone number"
           icon={Phone}
           error={errors.phone}
+          autoComplete="tel"
           required
         />
 
@@ -107,6 +110,7 @@ const Register = () => {
           placeholder="Create a password"
           icon={Lock}
           error={errors.password}
+          autoComplete="new-password"
           required
         />
 
@@ -119,6 +123,7 @@ const Register = () => {
           placeholder="Confirm your password"
           icon={Lock}
           error={errors.confirmPassword}
+          autoComplete="new-password"
           required
         />
 

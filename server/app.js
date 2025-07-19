@@ -18,10 +18,18 @@ app.use(express.urlencoded({ extended: true }));
 // Import routes
 const authRoutes = require('./routes/auth');
 const shopOwnerAuthRoutes = require('./routes/shopOwnerAuth');
+const bookingRoutes = require('./routes/bookings');
+const shopRoutes = require('./routes/shops');
+const serviceRoutes = require('./routes/services');
+const userRoutes = require('./routes/users');
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', shopOwnerAuthRoutes); // Shop owner auth routes
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/shops', shopRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/users', userRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

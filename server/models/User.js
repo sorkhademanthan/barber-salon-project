@@ -4,80 +4,49 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Name is required'],
+        required: true,
         trim: true
     },
     email: {
         type: String,
-        required: [true, 'Email is required'],
+        required: true,
         unique: true,
-        lowercase: true
-    },
-    password: {
-        type: String,
-        required: [true, 'Password is required'],
-        minlength: 6
+        lowercase: true,
+        trim: true,
+        index: true
     },
     phone: {
         type: String,
-        required: [true, 'Phone number is required']
+        required: true,
+        unique: true,
+        trim: true,
+        index: true
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6
     },
     role: {
         type: String,
-        enum: ['customer', 'barber', 'admin'],
+        enum: ['customer', 'barber', 'admin', 'shop_owner'],
         default: 'customer'
-    },
-    // Email verification fields
-    isEmailVerified: {
-        type: Boolean,
-        default: false
-    },
-    emailVerificationToken: String,
-    emailVerificationExpire: Date,
-    // Password reset fields
-    verificationToken: String,
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
-    // Customer specific fields
-    favoriteShops: [{
-        type: mongoose.Schema.ObjectId,
-        ref: 'Shop'
-    }],
-    // Barber specific fields
-    shop: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Shop',
-        required: false  // Remove the function requirement
-    },
-    specialties: [{
-        type: String,
-        enum: ['haircut', 'beard', 'shave', 'styling', 'coloring']
-    }],
-    experience: {
-        type: Number,
-        min: 0,
-        max: 50
-    },
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    lastLogin: {
-        type: Date,
-        default: Date.now
     },
     avatar: {
         type: String,
         default: null
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    isActive: {
+        type: Boolean,
+        default: true
     }
 }, {
     timestamps: true
 });
-
-// Indexes for fast querying
-// userSchema.index({ email: 1 });
-userSchema.index({ phone: 1 });
-userSchema.index({ role: 1 });
 
 // Hash password
 userSchema.pre('save', async function(next) {

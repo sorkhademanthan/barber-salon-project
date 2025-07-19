@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Calendar, 
   Clock, 
@@ -9,7 +9,26 @@ import {
   TrendingUp,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Scissors,
+  DollarSign,
+  Eye,
+  BarChart3,
+  Target,
+  Award,
+  Zap,
+  Coffee,
+  Sparkles,
+  Timer,
+  MapPin,
+  Phone,
+  MessageSquare,
+  Settings,
+  Bell,
+  ChevronRight,
+  Activity,
+  ThumbsUp,
+  Gift
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
@@ -22,9 +41,33 @@ const BarberDashboard = () => {
     upcomingBookings: 0,
     completedToday: 0,
     totalEarnings: 0,
+    weeklyEarnings: 0,
+    averageRating: 4.8,
+    totalClients: 0,
+    completionRate: 0,
   });
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState('overview');
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Update time every minute
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  const getCurrentGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -39,16 +82,19 @@ const BarberDashboard = () => {
       ]);
 
       const todayBookings = bookingsRes.data.data;
+      const completedBookings = todayBookings.filter(b => b.status === 'completed');
       
       setStats({
         todayBookings: todayBookings.length,
         upcomingBookings: todayBookings.filter(b => 
           ['pending', 'confirmed'].includes(b.status)
         ).length,
-        completedToday: todayBookings.filter(b => b.status === 'completed').length,
-        totalEarnings: todayBookings
-          .filter(b => b.status === 'completed')
-          .reduce((sum, b) => sum + b.totalAmount, 0),
+        completedToday: completedBookings.length,
+        totalEarnings: completedBookings.reduce((sum, b) => sum + b.totalAmount, 0),
+        weeklyEarnings: completedBookings.reduce((sum, b) => sum + b.totalAmount, 0) * 6, // Mock weekly
+        averageRating: 4.8,
+        totalClients: 127, // Mock data
+        completionRate: todayBookings.length > 0 ? Math.round((completedBookings.length / todayBookings.length) * 100) : 0,
       });
 
       setTodayAppointments(todayBookings);
@@ -69,235 +115,445 @@ const BarberDashboard = () => {
   };
 
   const getStatusBadge = (status) => {
-    const badges = {
-      pending: 'badge-warning',
-      confirmed: 'badge-info',
-      completed: 'badge-success',
-      cancelled: 'badge-danger',
+    const statusConfig = {
+      pending: { 
+        color: 'bg-amber-400/10 text-amber-400 border-amber-400/20', 
+        icon: Clock,
+        label: 'Pending'
+      },
+      confirmed: { 
+        color: 'bg-blue-400/10 text-blue-400 border-blue-400/20', 
+        icon: CheckCircle,
+        label: 'Confirmed'
+      },
+      completed: { 
+        color: 'bg-green-400/10 text-green-400 border-green-400/20', 
+        icon: CheckCircle,
+        label: 'Completed'
+      },
+      cancelled: { 
+        color: 'bg-red-400/10 text-red-400 border-red-400/20', 
+        icon: XCircle,
+        label: 'Cancelled'
+      },
     };
-    return badges[status] || 'badge-info';
+    return statusConfig[status] || statusConfig.pending;
+  };
+
+  const getNextAppointment = () => {
+    const upcoming = todayAppointments
+      .filter(apt => ['pending', 'confirmed'].includes(apt.status))
+      .sort((a, b) => a.slot?.startTime?.localeCompare(b.slot?.startTime))[0];
+    return upcoming;
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <LoadingSpinner size="large" />
+      <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black flex justify-center items-center">
+        <div className="text-center">
+          <LoadingSpinner size="large" />
+          <p className="text-zinc-400 mt-4">Loading your dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Welcome Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-primary-900 mb-2">
-            Good morning, {user?.name}! ✂️
-          </h1>
-          <p className="text-primary-600">
-            Here's what's happening in your schedule today
-          </p>
-        </div>
+  const nextAppointment = getNextAppointment();
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <Link to="/appointments">
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+            <div>
+              <motion.h1 
+                className="text-4xl md:text-5xl font-black text-white mb-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                {getCurrentGreeting()}, <span className="text-amber-400">{user?.name?.split(' ')[0]}</span>! 
+                <motion.span
+                  animate={{ rotate: [0, 15, -15, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  className="inline-block ml-2"
+                >
+                  ✂️
+                </motion.span>
+              </motion.h1>
+              <motion.p 
+                className="text-zinc-400 text-lg"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                Ready to make some magic happen today?
+              </motion.p>
+            </div>
+            
             <motion.div
-              className="luxury-card p-6 cursor-pointer group"
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.2 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex items-center space-x-4 mt-4 lg:mt-0"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-primary-900 mb-2">
-                    View All Appointments
-                  </h3>
-                  <p className="text-primary-600 text-sm">
-                    Manage your schedule and appointments
-                  </p>
+              <div className="text-right">
+                <div className="text-white font-semibold">
+                  {currentTime.toLocaleDateString('en-US', { 
+                    weekday: 'long',
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
                 </div>
-                <div className="p-3 bg-accent-100 rounded-xl group-hover:bg-accent-200 transition-colors">
-                  <Calendar className="text-accent-600" size={24} />
+                <div className="text-amber-400 font-bold text-lg">
+                  {currentTime.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
                 </div>
               </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-full flex items-center justify-center">
+                <Sparkles className="text-black" size={24} />
+              </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Next Appointment Alert */}
+        <AnimatePresence>
+          {nextAppointment && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="mb-8"
+            >
+              <div className="bg-gradient-to-r from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-2xl p-6 backdrop-blur-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-amber-400/20 rounded-full flex items-center justify-center">
+                      <Timer className="text-amber-400" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-white font-bold text-lg">Next Appointment</h3>
+                      <p className="text-zinc-300">
+                        <span className="text-amber-400 font-semibold">{nextAppointment.customer?.name}</span> at{' '}
+                        <span className="text-amber-400 font-semibold">{nextAppointment.slot?.startTime}</span>
+                      </p>
+                      <p className="text-zinc-400 text-sm">
+                        {nextAppointment.services?.map(s => s.service?.name).join(', ')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-amber-400">₹{nextAppointment.totalAmount}</div>
+                    <div className="text-zinc-400 text-sm">Total Amount</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+        >
+          <Link to="/appointments">
+            <motion.div
+              className="group bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-amber-400/50 hover:bg-amber-400/5"
+              whileHover={{ y: -4, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-amber-400/20 to-yellow-500/20 rounded-xl group-hover:from-amber-400/30 group-hover:to-yellow-500/30 transition-all duration-300">
+                  <Calendar className="text-amber-400" size={24} />
+                </div>
+                <ChevronRight className="text-zinc-400 group-hover:text-amber-400 transition-colors" size={20} />
+              </div>
+              <h3 className="text-white font-bold text-lg mb-1">Appointments</h3>
+              <p className="text-zinc-400 text-sm">Manage your schedule</p>
             </motion.div>
           </Link>
 
           <Link to="/availability">
             <motion.div
-              className="luxury-card p-6 cursor-pointer group"
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.2 }}
+              className="group bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-blue-400/50 hover:bg-blue-400/5"
+              whileHover={{ y: -4, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-primary-900 mb-2">
-                    Set Availability
-                  </h3>
-                  <p className="text-primary-600 text-sm">
-                    Update your working hours and schedule
-                  </p>
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-xl group-hover:from-blue-400/30 group-hover:to-cyan-500/30 transition-all duration-300">
+                  <Clock className="text-blue-400" size={24} />
                 </div>
-                <div className="p-3 bg-primary-100 rounded-xl group-hover:bg-primary-200 transition-colors">
-                  <Clock className="text-primary-600" size={24} />
-                </div>
+                <ChevronRight className="text-zinc-400 group-hover:text-blue-400 transition-colors" size={20} />
               </div>
+              <h3 className="text-white font-bold text-lg mb-1">Availability</h3>
+              <p className="text-zinc-400 text-sm">Set working hours</p>
             </motion.div>
           </Link>
-        </div>
-      </motion.div>
 
-      {/* Stats Grid */}
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-accent-100 rounded-xl">
-              <Calendar className="text-accent-600" size={24} />
+          <motion.div
+            className="group bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-green-400/50 hover:bg-green-400/5"
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-xl group-hover:from-green-400/30 group-hover:to-emerald-500/30 transition-all duration-300">
+                <BarChart3 className="text-green-400" size={24} />
+              </div>
+              <ChevronRight className="text-zinc-400 group-hover:text-green-400 transition-colors" size={20} />
             </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                {stats.todayBookings}
-              </p>
-              <p className="text-primary-600 text-sm">Today's Bookings</p>
-            </div>
-          </div>
-        </div>
+            <h3 className="text-white font-bold text-lg mb-1">Analytics</h3>
+            <p className="text-zinc-400 text-sm">View performance</p>
+          </motion.div>
 
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-primary-100 rounded-xl">
-              <Clock className="text-primary-600" size={24} />
+          <motion.div
+            className="group bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-purple-400/50 hover:bg-purple-400/5"
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-xl group-hover:from-purple-400/30 group-hover:to-pink-500/30 transition-all duration-300">
+                <Settings className="text-purple-400" size={24} />
+              </div>
+              <ChevronRight className="text-zinc-400 group-hover:text-purple-400 transition-colors" size={20} />
             </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                {stats.upcomingBookings}
-              </p>
-              <p className="text-primary-600 text-sm">Upcoming</p>
-            </div>
-          </div>
-        </div>
+            <h3 className="text-white font-bold text-lg mb-1">Settings</h3>
+            <p className="text-zinc-400 text-sm">Customize profile</p>
+          </motion.div>
+        </motion.div>
 
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-success-100 rounded-xl">
-              <CheckCircle className="text-success-600" size={24} />
+        {/* Performance Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        >
+          <motion.div
+            className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border border-zinc-700/50 rounded-2xl p-6"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-amber-400/20 to-yellow-500/20 rounded-xl">
+                <DollarSign className="text-amber-400" size={28} />
+              </div>
+              <motion.div
+                className="text-amber-400"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <TrendingUp size={20} />
+              </motion.div>
             </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                {stats.completedToday}
-              </p>
-              <p className="text-primary-600 text-sm">Completed Today</p>
+            <div className="mb-2">
+              <div className="text-3xl font-black text-white mb-1">
+                ₹{stats.totalEarnings?.toLocaleString() || '0'}
+              </div>
+              <div className="text-zinc-400 text-sm">Total Earnings</div>
             </div>
-          </div>
-        </div>
+            <div className="flex items-center text-green-400 text-sm">
+              <ArrowUp size={16} className="mr-1" />
+              <span>+{stats.weeklyEarnings?.toLocaleString() || '0'} this week</span>
+            </div>
+          </motion.div>
 
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-danger-100 rounded-xl">
-              <TrendingUp className="text-danger-600" size={24} />
+          <motion.div
+            className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border border-zinc-700/50 rounded-2xl p-6"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-blue-400/20 to-cyan-500/20 rounded-xl">
+                <Users className="text-blue-400" size={28} />
+              </div>
+              <div className="text-blue-400">
+                <Calendar size={20} />
+              </div>
             </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                ₹{stats.totalEarnings}
-              </p>
-              <p className="text-primary-600 text-sm">Today's Earnings</p>
+            <div className="mb-2">
+              <div className="text-3xl font-black text-white mb-1">
+                {stats.totalAppointments || 0}
+              </div>
+              <div className="text-zinc-400 text-sm">Total Appointments</div>
             </div>
-          </div>
-        </div>
-      </motion.div>
+            <div className="flex items-center text-blue-400 text-sm">
+              <Clock size={16} className="mr-1" />
+              <span>{stats.todayAppointments || 0} today</span>
+            </div>
+          </motion.div>
 
-      {/* Today's Appointments */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <div className="luxury-card p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-primary-900">
-              Today's Appointments
-            </h2>
-            <Link 
-              to="/appointments"
-              className="text-accent-600 hover:text-accent-700 transition-colors text-sm font-medium"
-            >
-              View All
-            </Link>
-          </div>
-
-          {todayAppointments.length === 0 ? (
-            <div className="text-center py-8">
-              <Calendar className="mx-auto text-primary-300 mb-4" size={48} />
-              <p className="text-primary-600">No appointments scheduled for today</p>
+          <motion.div
+            className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border border-zinc-700/50 rounded-2xl p-6"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-green-400/20 to-emerald-500/20 rounded-xl">
+                <Star className="text-green-400" size={28} />
+              </div>
+              <div className="text-green-400">
+                <Award size={20} />
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {todayAppointments.map((appointment) => (
-                <div
-                  key={appointment._id}
-                  className="flex items-center justify-between p-4 bg-primary-50 rounded-xl"
+            <div className="mb-2">
+              <div className="text-3xl font-black text-white mb-1">
+                {stats.averageRating || '0.0'}
+              </div>
+              <div className="text-zinc-400 text-sm">Average Rating</div>
+            </div>
+            <div className="flex items-center text-yellow-400 text-sm">
+              <Star size={16} className="mr-1 fill-current" />
+              <span>{stats.totalReviews || 0} reviews</span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 backdrop-blur-xl border border-zinc-700/50 rounded-2xl p-6"
+            whileHover={{ scale: 1.02 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-gradient-to-br from-purple-400/20 to-pink-500/20 rounded-xl">
+                <TrendingUp className="text-purple-400" size={28} />
+              </div>
+              <div className="text-purple-400">
+                <Target size={20} />
+              </div>
+            </div>
+            <div className="mb-2">
+              <div className="text-3xl font-black text-white mb-1">
+                {stats.completionRate || '0'}%
+              </div>
+              <div className="text-zinc-400 text-sm">Completion Rate</div>
+            </div>
+            <div className="flex items-center text-purple-400 text-sm">
+              <CheckCircle size={16} className="mr-1" />
+              <span>Professional</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Appointments Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 backdrop-blur-xl border border-zinc-700/50 rounded-2xl overflow-hidden"
+        >
+          {/* Section Header */}
+          <div className="border-b border-zinc-700/50 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-to-br from-amber-400/20 to-yellow-500/20 rounded-lg">
+                  <Scissors className="text-amber-400" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-white">Your Appointments</h2>
+                  <p className="text-zinc-400">Manage your daily schedule</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <motion.button
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    selectedTab === 'today'
+                      ? 'bg-amber-400 text-black'
+                      : 'bg-zinc-700/50 text-zinc-300 hover:bg-zinc-600/50'
+                  }`}
+                  onClick={() => setSelectedTab('today')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-accent-100 rounded-full flex items-center justify-center">
-                      <Users className="text-accent-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-primary-900">
-                        {appointment.customer?.name}
-                      </p>
-                      <p className="text-sm text-primary-600">
-                        {appointment.slot?.startTime} - {appointment.slot?.endTime}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={getStatusBadge(appointment.status)}>
-                          {appointment.status}
-                        </span>
-                        <span className="text-xs text-primary-500">
-                          {appointment.services?.map(s => s.service?.name).join(', ')}
-                        </span>
+                  Today
+                </motion.button>
+                <motion.button
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    selectedTab === 'upcoming'
+                      ? 'bg-amber-400 text-black'
+                      : 'bg-zinc-700/50 text-zinc-300 hover:bg-zinc-600/50'
+                  }`}
+                  onClick={() => setSelectedTab('upcoming')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Upcoming
+                </motion.button>
+              </div>
+            </div>
+          </div>
+
+          {/* Appointments List */}
+          <div className="p-6">
+            {appointments.length > 0 ? (
+              <div className="space-y-4">
+                {appointments.map((appointment, index) => (
+                  <motion.div
+                    key={appointment._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-zinc-700/30 backdrop-blur-sm border border-zinc-600/30 rounded-xl p-6 hover:border-amber-400/30 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center">
+                          <User className="text-amber-400" size={20} />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-bold text-lg">
+                            {appointment.customer?.name || 'Unknown Customer'}
+                          </h3>
+                          <p className="text-zinc-400">
+                            {appointment.services?.map(s => s.service?.name).join(', ')}
+                          </p>
+                          <div className="flex items-center text-zinc-500 text-sm mt-1">
+                            <Clock size={14} className="mr-1" />
+                            <span>
+                              {appointment.slot?.startTime} - {appointment.slot?.endTime}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-amber-400 mb-1">
+                          ₹{appointment.totalAmount}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {getStatusBadge(appointment.status)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium text-primary-900">
-                      ₹{appointment.totalAmount}
-                    </span>
-                    
-                    {appointment.status === 'pending' && (
-                      <Button
-                        size="small"
-                        onClick={() => updateBookingStatus(appointment._id, 'confirmed')}
-                      >
-                        Confirm
-                      </Button>
-                    )}
-                    
-                    {appointment.status === 'confirmed' && (
-                      <Button
-                        size="small"
-                        variant="secondary"
-                        onClick={() => updateBookingStatus(appointment._id, 'completed')}
-                      >
-                        Complete
-                      </Button>
-                    )}
-                  </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-12"
+              >
+                <div className="w-20 h-20 bg-zinc-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Scissors className="text-zinc-500" size={32} />
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
+                <h3 className="text-xl font-bold text-zinc-400 mb-2">No appointments yet</h3>
+                <p className="text-zinc-500">
+                  Your schedule is clear for {selectedTab === 'today' ? 'today' : 'the upcoming days'}
+                </p>
+              </motion.div>
+            )}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

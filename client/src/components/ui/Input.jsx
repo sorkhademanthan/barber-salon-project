@@ -8,6 +8,7 @@ const Input = forwardRef(({
   error,
   className = '',
   icon: Icon,
+  autoComplete,
   ...props
 }, ref) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +36,7 @@ const Input = forwardRef(({
         <input
           ref={ref}
           type={inputType}
+          autoComplete={autoComplete}
           className={`
             w-full h-12 px-4 ${Icon ? 'pl-10' : ''} ${isPassword ? 'pr-10' : ''}
             bg-zinc-800/50 backdrop-blur-sm border border-zinc-700 rounded-lg

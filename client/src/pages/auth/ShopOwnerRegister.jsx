@@ -194,6 +194,7 @@ const ShopOwnerRegister = () => {
                 placeholder="John Empire"
                 icon={User}
                 error={errors.ownerName}
+                autoComplete="name"
                 required
               />
 
@@ -207,6 +208,7 @@ const ShopOwnerRegister = () => {
                   placeholder="john@empire.com"
                   icon={Mail}
                   error={errors.email}
+                  autoComplete="email"
                   required
                 />
                 <Input
@@ -217,6 +219,7 @@ const ShopOwnerRegister = () => {
                   placeholder="+1 (555) 123-4567"
                   icon={Phone}
                   error={errors.phone}
+                  autoComplete="tel"
                   required
                 />
               </div>
@@ -231,6 +234,7 @@ const ShopOwnerRegister = () => {
                   placeholder="Create strong password"
                   icon={Lock}
                   error={errors.password}
+                  autoComplete="new-password"
                   required
                 />
                 <Input
@@ -242,6 +246,7 @@ const ShopOwnerRegister = () => {
                   placeholder="Confirm your password"
                   icon={Lock}
                   error={errors.confirmPassword}
+                  autoComplete="new-password"
                   required
                 />
               </div>
@@ -290,6 +295,7 @@ const ShopOwnerRegister = () => {
                 placeholder="Royal Cuts Empire"
                 icon={Building}
                 error={errors.shopName}
+                autoComplete="organization"
                 required
               />
 
@@ -301,6 +307,7 @@ const ShopOwnerRegister = () => {
                 placeholder="123 Luxury Boulevard"
                 icon={MapPin}
                 error={errors.street}
+                autoComplete="street-address"
                 required
               />
 
@@ -312,6 +319,7 @@ const ShopOwnerRegister = () => {
                   onChange={handleChange}
                   placeholder="New York"
                   error={errors.city}
+                  autoComplete="address-level2"
                   required
                 />
                 <Input
@@ -321,6 +329,7 @@ const ShopOwnerRegister = () => {
                   onChange={handleChange}
                   placeholder="NY"
                   error={errors.state}
+                  autoComplete="address-level1"
                   required
                 />
               </div>
@@ -333,6 +342,7 @@ const ShopOwnerRegister = () => {
                   onChange={handleChange}
                   placeholder="10001"
                   error={errors.zipCode}
+                  autoComplete="postal-code"
                   required
                 />
                 <Input
@@ -342,6 +352,7 @@ const ShopOwnerRegister = () => {
                   onChange={handleChange}
                   placeholder="Shop number"
                   icon={Phone}
+                  autoComplete="tel"
                 />
               </div>
 
@@ -354,6 +365,7 @@ const ShopOwnerRegister = () => {
                   onChange={handleChange}
                   placeholder="info@royalcuts.com"
                   icon={Mail}
+                  autoComplete="email"
                 />
               </div>
 

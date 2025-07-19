@@ -1,92 +1,108 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const connectDB = require('./config/database');
-const { errorHandler } = require('./middleware/errorHandler');
-const seedSpecialties = require('./utils/seedSpecialties');
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Connect to MongoDB and seed data
-const initializeApp = async () => {
-    await connectDB();
-    await seedSpecialties();
-};
-
-initializeApp();
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5173', // Vite default port
+    process.env.CLIENT_URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/shops', require('./routes/shops'));
-app.use('/api/service-templates', require('./routes/serviceTemplates'));
-app.use('/api/specialties', require('./routes/specialties'));
-app.use('/api/services', require('./routes/services'));
-app.use('/api/working-hours', require('./routes/workingHours'));
-app.use('/api/slots', require('./routes/slots'));
-app.use('/api/bookings', require('./routes/bookings'));
+// Database connection function
+const initializeApp = async () => {
+  try {
+    // Connect to MongoDB
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/barber-salon');
+    console.log('✅ Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+    console.log('⚠️  Starting server without database connection...');
+  }
+  
+  // Always start server regardless of DB connection
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`
+🚀 Barber Salon Server is running!
 
-// Health check endpoint
+📍 Port: ${PORT}
+🌍 Environment: ${process.env.NODE_ENV || 'development'}
+🔗 API Base: http://localhost:${PORT}/api
+🏥 Health Check: http://localhost:${PORT}/api/health
+
+📚 Available Routes:
+- POST /api/auth/register
+- POST /api/auth/login
+- GET  /api/auth/me
+- POST /api/auth/shop-register
+    `);
+  });
+};
+
+// Routes - Add error handling for route loading
+try {
+  app.use('/api/auth', require('./routes/auth'));
+  console.log('✅ Auth routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading auth routes:', error.message);
+}
+
+// Health check route
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'Barber Salon API is running!',
+  res.json({ 
+    status: 'OK', 
+    message: 'Server is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    routes: {
+      auth: '/api/auth',
+      health: '/api/health'
+    }
   });
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
+// Test route to verify server is working
+app.get('/api/test', (req, res) => {
   res.json({
-    message: 'Welcome to Barber Salon API',
-    version: '1.0.0'
+    success: true,
+    message: 'Server is working!',
+    timestamp: new Date().toISOString()
   });
 });
 
-// Handle 404 routes (this should be after all other routes but before error handler)
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production' ? 'Something went wrong!' : err.message
+  });
+});
+
+// 404 handler
 app.use('*', (req, res) => {
-  console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`
   });
 });
 
-// Error handling middleware (should be last)
-app.use(errorHandler);
-
-app.listen(PORT, () => {
-  console.log(`
-  🚀 Barber Salon Server is running!
-  
-  📍 Port: ${PORT}
-  🌍 Environment: ${process.env.NODE_ENV || 'development'}
-  🔗 API Base: http://localhost:${PORT}/api
-  🏥 Health Check: http://localhost:${PORT}/api/health
-  
-  📚 Available Routes:
-  - POST /api/auth/register
-  - POST /api/auth/login
-  - GET  /api/shops
-  - POST /api/shops
-  - GET  /api/specialties
-  - GET  /api/services
-  - GET  /api/working-hours
-  - POST /api/slots/generate
-  - GET  /api/slots/available/:barberId/:date
-  - POST /api/bookings
-  - GET  /api/bookings
-  `);
-});
+// Initialize app
+initializeApp();
 
 module.exports = app;
