@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  Star,
-  ArrowRight,
+import {
+  Calendar,
+  Clock,
+  Heart,
+  Bell,
+  MapPin,
   CalendarPlus,
-  History
+  History,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
@@ -20,8 +21,9 @@ const CustomerDashboard = () => {
     upcomingBookings: 0,
     totalBookings: 0,
     favoriteShops: 0,
+    reviews: 0,
+    notifications: 0,
   });
-  const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,18 +35,17 @@ const CustomerDashboard = () => {
       const [bookingsRes] = await Promise.all([
         api.get('/bookings/my-bookings'),
       ]);
-
       const bookings = bookingsRes.data.data;
-      
+
       setStats({
-        upcomingBookings: bookings.filter(b => 
+        upcomingBookings: bookings.filter(b =>
           ['pending', 'confirmed'].includes(b.status)
         ).length,
         totalBookings: bookings.length,
         favoriteShops: user.favoriteShops?.length || 0,
+        reviews: user.reviews?.length || 0,
+        notifications: user.notifications?.length || 0,
       });
-
-      setRecentBookings(bookings.slice(0, 3));
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -52,214 +53,180 @@ const CustomerDashboard = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const badges = {
-      pending: 'badge-warning',
-      confirmed: 'badge-info',
-      completed: 'badge-success',
-      cancelled: 'badge-danger',
-    };
-    return badges[status] || 'badge-info';
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
+      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-black via-zinc-900 to-black">
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Welcome Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="mb-8">
-          <h1 className="text-3xl font-display font-bold text-primary-900 mb-2">
-            Welcome back, {user?.name}! 👋
-          </h1>
-          <p className="text-primary-600">
-            Ready for your next grooming session?
-          </p>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-          <Link to="/book">
-            <motion.div
-              className="luxury-card p-6 cursor-pointer group"
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-primary-900 mb-2">
-                    Book New Appointment
-                  </h3>
-                  <p className="text-primary-600 text-sm">
-                    Schedule your next grooming session
-                  </p>
-                </div>
-                <div className="p-3 bg-accent-100 rounded-xl group-hover:bg-accent-200 transition-colors">
-                  <CalendarPlus className="text-accent-600" size={24} />
-                </div>
-              </div>
-            </motion.div>
-          </Link>
-
-          <Link to="/bookings">
-            <motion.div
-              className="luxury-card p-6 cursor-pointer group"
-              whileHover={{ y: -2 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-primary-900 mb-2">
-                    My Bookings
-                  </h3>
-                  <p className="text-primary-600 text-sm">
-                    View and manage your appointments
-                  </p>
-                </div>
-                <div className="p-3 bg-primary-100 rounded-xl group-hover:bg-primary-200 transition-colors">
-                  <History className="text-primary-600" size={24} />
-                </div>
-              </div>
-            </motion.div>
-          </Link>
-        </div>
-      </motion.div>
-
-      {/* Stats Grid */}
-      <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-accent-100 rounded-xl">
-              <Calendar className="text-accent-600" size={24} />
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                {stats.upcomingBookings}
+    <div className="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-black py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-8">
+        {/* Hero Greeting */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="mb-12"
+        >
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <h1 className="text-5xl md:text-6xl font-black font-display text-white mb-2 leading-tight">
+                Welcome,{' '}
+                <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 bg-clip-text text-transparent">
+                  {user?.name?.split(' ')[0]}
+                </span>
+              </h1>
+              <p className="text-lg text-zinc-400 font-medium">
+                Your premium grooming journey starts here.
               </p>
-              <p className="text-primary-600 text-sm">Upcoming Bookings</p>
             </div>
-          </div>
-        </div>
-
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-success-100 rounded-xl">
-              <Clock className="text-success-600" size={24} />
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                {stats.totalBookings}
-              </p>
-              <p className="text-primary-600 text-sm">Total Appointments</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="luxury-card p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-danger-100 rounded-xl">
-              <Star className="text-danger-600" size={24} />
-            </div>
-            <div className="ml-4">
-              <p className="text-2xl font-bold text-primary-900">
-                {stats.favoriteShops}
-              </p>
-              <p className="text-primary-600 text-sm">Favorite Shops</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Recent Bookings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <div className="luxury-card p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-primary-900">
-              Recent Bookings
-            </h2>
-            <Link 
-              to="/bookings"
-              className="flex items-center text-accent-600 hover:text-accent-700 transition-colors"
-            >
-              View All
-              <ArrowRight size={16} className="ml-1" />
-            </Link>
-          </div>
-
-          {recentBookings.length === 0 ? (
-            <div className="text-center py-8">
-              <Calendar className="mx-auto text-primary-300 mb-4" size={48} />
-              <p className="text-primary-600 mb-4">No bookings yet</p>
-              <Link to="/book">
-                <Button>Book Your First Appointment</Button>
+            <div className="flex items-center gap-4">
+              <Link to="/notifications" className="relative">
+                <Bell className="text-amber-400" size={32} />
+                {stats.notifications > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5">
+                    {stats.notifications}
+                  </span>
+                )}
+              </Link>
+              <Link to="/profile">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt="Avatar"
+                    className="w-12 h-12 rounded-full border-2 border-amber-400 object-cover shadow-luxury"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-amber-400 text-black font-black flex items-center justify-center rounded-full text-xl border-2 border-amber-400 shadow-luxury">
+                    {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </div>
+                )}
               </Link>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {recentBookings.map((booking) => (
-                <div
-                  key={booking._id}
-                  className="flex items-center justify-between p-4 bg-primary-50 rounded-xl"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-white rounded-lg">
-                      <User className="text-primary-600" size={20} />
-                    </div>
-                    <div>
-                      <p className="font-medium text-primary-900">
-                        {booking.barber?.name}
-                      </p>
-                      <p className="text-sm text-primary-600">
-                        {booking.shop?.name}
-                      </p>
-                      <p className="text-xs text-primary-500">
-                        {formatDate(booking.slot?.date)} at {booking.slot?.startTime}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className={`${getStatusBadge(booking.status)}`}>
-                      {booking.status}
-                    </span>
-                    <p className="text-sm font-medium text-primary-900 mt-1">
-                      ₹{booking.totalAmount}
-                    </p>
-                  </div>
-                </div>
-              ))}
+          </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12"
+        >
+          <Link to="/book">
+            <motion.div
+              className="bg-gradient-to-br from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-2xl p-8 flex items-center justify-between shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-1 font-display">Book New Appointment</h3>
+                <p className="text-zinc-400 text-base">Schedule your next grooming session</p>
+              </div>
+              <div className="p-4 bg-amber-400/20 rounded-xl">
+                <CalendarPlus className="text-amber-400" size={32} />
+              </div>
+            </motion.div>
+          </Link>
+          <Link to="/bookings">
+            <motion.div
+              className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex items-center justify-between shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-1 font-display">My Bookings</h3>
+                <p className="text-zinc-400 text-base">View and manage your appointments</p>
+              </div>
+              <div className="p-4 bg-zinc-700/30 rounded-xl">
+                <History className="text-amber-400" size={32} />
+              </div>
+            </motion.div>
+          </Link>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-br from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-2xl p-8 flex items-center shadow-luxury"
+          >
+            <div className="p-4 bg-amber-400/20 rounded-xl">
+              <Calendar className="text-amber-400" size={32} />
             </div>
-          )}
-        </div>
-      </motion.div>
+            <div className="ml-6">
+              <p className="text-4xl font-black text-white">{stats.upcomingBookings}</p>
+              <p className="text-zinc-400 text-lg">Upcoming Bookings</p>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex items-center shadow-luxury"
+          >
+            <div className="p-4 bg-zinc-700/30 rounded-xl">
+              <Clock className="text-amber-400" size={32} />
+            </div>
+            <div className="ml-6">
+              <p className="text-4xl font-black text-white">{stats.totalBookings}</p>
+              <p className="text-zinc-400 text-lg">Total Appointments</p>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.25 }}
+            className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex items-center shadow-luxury"
+          >
+            <div className="p-4 bg-zinc-700/30 rounded-xl">
+              <Heart className="text-amber-400" size={32} />
+            </div>
+            <div className="ml-6">
+              <p className="text-4xl font-black text-white">{stats.favoriteShops}</p>
+              <p className="text-zinc-400 text-lg">Favorite Shops</p>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Recommendations (Shops Near Me) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+          className="mb-10"
+        >
+          <div className="bg-gradient-to-br from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-3xl p-10 shadow-luxury">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-black text-white font-display">Shops Near Me</h2>
+              <span className="text-xs text-zinc-400">Enable location for better suggestions</span>
+            </div>
+            <div className="text-center py-12">
+              <MapPin className="mx-auto text-amber-400 mb-6" size={56} />
+              <p className="text-zinc-400 text-lg mb-4">
+                Location-based recommendations coming soon!
+              </p>
+              <Button variant="primary" disabled>
+                Enable Location
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };
 
 export default CustomerDashboard;
+         
+       
