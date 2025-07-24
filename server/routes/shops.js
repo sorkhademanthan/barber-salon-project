@@ -13,7 +13,8 @@ const {
   getShopServices,
   addShopService,
   updateShopService,
-  deleteShopService
+  deleteShopService,
+  getShopBarbers
 } = require('../controllers/shopController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -72,6 +73,7 @@ const serviceValidation = [
 router.get('/', getShops);
 router.get('/:id', getShop);
 router.get('/:id/services', getShopServices);
+router.get('/:id/barbers', getShopBarbers);
 
 // Protected routes
 router.use(protect);

@@ -77,7 +77,7 @@ const getShop = asyncHandler(async (req, res, next) => {
     }
 });
 
-// @desc    Create new shop
+// @desc    Create new shop (with barbers and services)
 // @route   POST /api/shops
 // @access  Private (Barber/Admin only)
 const createShop = asyncHandler(async (req, res, next) => {
@@ -89,73 +89,64 @@ const createShop = asyncHandler(async (req, res, next) => {
             errors: errors.array()
         });
     }
-    
-    console.log('🏪 Creating shop for user:', req.user.id, 'Role:', req.user.role);
-    
-    // Check if user already has a shop (barbers can only have one shop)
-    if (req.user.role === 'barber') {
-        const existingShop = await Shop.findOne({ ownerId: req.user.id, isActive: true });
-        
-        if (existingShop) {
-            console.log('❌ User already has shop:', existingShop._id);
-            return res.status(400).json({
-                success: false,
-                message: 'You already have a shop registered',
-                data: {
-                    existingShop: {
-                        id: existingShop._id,
-                        name: existingShop.name,
-                        createdAt: existingShop.createdAt
-                    }
-                }
-            });
-        }
-    }
-    
-    // Extract services from request body
-    const { services, ...shopData } = req.body;
-    
-    // Add ownerId to shop data
+
+    // Accept barbers and services arrays in request body
+    const { barbers, services, ...shopData } = req.body;
     shopData.ownerId = req.user.id;
-    
-    console.log('✅ Creating new shop...');
+
+    // Create shop
     const shop = await Shop.create(shopData);
-    
-    // Create services for the shop if provided
-    if (services && services.length > 0) {
-        console.log('🛠️ Creating services for shop...');
-        const servicePromises = services.map(service => 
+
+    // Create barbers and link to shop
+    if (Array.isArray(barbers) && barbers.length > 0) {
+        const User = require('../models/User');
+        const createdBarbers = await Promise.all(barbers.map(async (barber) => {
+            const user = new User({
+                name: barber.name,
+                email: barber.email,
+                phone: barber.phone,
+                password: barber.password,
+                role: 'barber'
+            });
+            await user.save();
+            return {
+                user: user._id,
+                isActive: true,
+                specialties: barber.specialties || [],
+                experience: barber.experience || 0
+            };
+        }));
+        shop.barbers = createdBarbers;
+    }
+
+    // Create services and link to shop
+    if (Array.isArray(services) && services.length > 0) {
+        const Service = require('../models/Service');
+        const createdServices = await Promise.all(services.map(service =>
             Service.create({
                 ...service,
                 shopId: shop._id
             })
-        );
-        
-        const createdServices = await Promise.all(servicePromises);
-        
-        // Update shop with service references
+        ));
         shop.services = createdServices.map(service => service._id);
-        await shop.save();
-        
-        console.log(`✅ Created ${createdServices.length} services`);
     }
-    
+
+    await shop.save();
+
     // Update user's shop reference
     await User.findByIdAndUpdate(req.user.id, { shop: shop._id });
-    console.log('✅ Updated user shop reference');
-    
+
     try {
         const populatedShop = await Shop.findById(shop._id)
             .populate('ownerId', 'name email')
-            .populate('services');
-        
+            .populate('services')
+            .populate('barbers.user', 'name email phone');
         res.status(201).json({
             success: true,
             message: 'Shop created successfully',
             data: populatedShop
         });
     } catch (error) {
-        // If population fails, still return the basic shop
         res.status(201).json({
             success: true,
             message: 'Shop created successfully',
@@ -466,6 +457,53 @@ const deleteShopService = asyncHandler(async (req, res, next) => {
     });
 });
 
+// @desc    Get barbers for a shop
+// @route   GET /api/shops/:id/barbers
+// @access  Public
+const getShopBarbers = asyncHandler(async (req, res, next) => {
+    const shop = await Shop.findById(req.params.id)
+        .populate({
+            path: 'barbers.user',
+            select: 'name email phone avatar experience specialties role isActive'
+        });
+    if (!shop || !shop.isActive) {
+        return next(new ErrorResponse('Shop not found', 404));
+    }
+    // Return only active barbers
+    const activeBarbers = (shop.barbers || []).filter(b => b.isActive && b.user);
+    res.status(200).json({
+        success: true,
+        count: activeBarbers.length,
+        data: activeBarbers
+    });
+});
+
+// Utility function to add a barber to a shop
+const addBarberToShop = async ({ shopId, name, email, phone, password, specialties, experience }) => {
+    const User = require('../models/User');
+    // Create barber user
+    const user = new User({
+        name,
+        email,
+        phone,
+        password,
+        role: 'barber'
+    });
+    await user.save();
+
+    // Add barber to shop's barbers array
+    const shop = await Shop.findById(shopId);
+    if (!shop) throw new Error('Shop not found');
+    shop.barbers.push({
+        user: user._id,
+        isActive: true,
+        specialties: specialties || [],
+        experience: experience || 0
+    });
+    await shop.save();
+    return user;
+};
+
 module.exports = {
     getShops,
     getShop,
@@ -479,5 +517,7 @@ module.exports = {
     getShopServices,
     addShopService,
     updateShopService,
-    deleteShopService
+    deleteShopService,
+    getShopBarbers,
+    addBarberToShop
 };

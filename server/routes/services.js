@@ -14,6 +14,7 @@ const router = express.Router();
 
 // Validation rules
 const serviceValidation = [
+    body('shopId').isMongoId().withMessage('Valid shop ID is required'),
     body('name')
         .trim()
         .isLength({ min: 2, max: 100 })

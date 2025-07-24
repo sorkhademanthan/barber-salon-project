@@ -43,7 +43,7 @@ router.get('/my-bookings', authorize('customer'), getMyBookings);
 router.post('/', authorize('customer'), bookingValidation, createBooking);
 router.put('/:id/cancel', authorize('customer'), cancelBooking);
 
-// Barber routes
+// Barber/Admin routes
 router.get('/shop/:shopId', authorize('barber', 'admin'), getShopBookings);
 router.put('/:id/status', authorize('barber', 'admin'), updateBookingStatus);
 

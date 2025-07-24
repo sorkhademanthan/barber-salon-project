@@ -7,9 +7,6 @@ import {
   Building,
   TrendingUp,
   Scissors,
-  Star,
-  Award,
-  User,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
@@ -73,9 +70,11 @@ const AdminDashboard = () => {
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h1 className="text-6xl font-black font-display text-white mb-2 leading-tight">
-                <span>Welcome,</span>
-                <span className="text-amber-400 ml-2">{user?.name?.split(' ')[0]}</span>
+              <h1 className="text-5xl md:text-6xl font-black font-display text-white mb-2 leading-tight">
+                Welcome,{' '}
+                <span className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-400 bg-clip-text text-transparent">
+                  {user?.name?.split(' ')[0]}
+                </span>
               </h1>
               <p className="text-lg text-zinc-400 font-medium">
                 Your luxury business dashboard. Every detail matters.
@@ -108,11 +107,11 @@ const AdminDashboard = () => {
         >
           <Link to="/create-shop">
             <motion.div
-              className="bg-gradient-to-br from-amber-400/20 to-yellow-500/20 border border-amber-400 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
-              whileHover={{ scale: 1.04, y: -2 }}
+              className="bg-gradient-to-br from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
+              whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="p-4 bg-amber-400/30 rounded-xl mb-4">
+              <div className="p-4 bg-amber-400/20 rounded-xl mb-4">
                 <Building className="text-amber-400" size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-1 font-display">Create Shop</h3>
@@ -121,11 +120,11 @@ const AdminDashboard = () => {
           </Link>
           <Link to="/create-barber">
             <motion.div
-              className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
-              whileHover={{ scale: 1.04, y: -2 }}
+              className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
+              whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="p-4 bg-zinc-700/40 rounded-xl mb-4">
+              <div className="p-4 bg-zinc-700/30 rounded-xl mb-4">
                 <Scissors className="text-amber-400" size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-1 font-display">Add Barber</h3>
@@ -134,11 +133,11 @@ const AdminDashboard = () => {
           </Link>
           <Link to="/users">
             <motion.div
-              className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
-              whileHover={{ scale: 1.04, y: -2 }}
+              className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
+              whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="p-4 bg-zinc-700/40 rounded-xl mb-4">
+              <div className="p-4 bg-zinc-700/30 rounded-xl mb-4">
                 <Users className="text-amber-400" size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-1 font-display">Manage Users</h3>
@@ -147,11 +146,11 @@ const AdminDashboard = () => {
           </Link>
           <Link to="/all-bookings">
             <motion.div
-              className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
-              whileHover={{ scale: 1.04, y: -2 }}
+              className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex flex-col items-center justify-center shadow-luxury hover:shadow-luxury-lg transition-all cursor-pointer"
+              whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="p-4 bg-zinc-700/40 rounded-xl mb-4">
+              <div className="p-4 bg-zinc-700/30 rounded-xl mb-4">
                 <Calendar className="text-amber-400" size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-1 font-display">View Bookings</h3>
@@ -177,9 +176,9 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.15 }}
-            className="bg-gradient-to-br from-amber-400/20 to-yellow-500/20 border border-amber-400 rounded-2xl p-8 flex items-center shadow-luxury"
+            className="bg-gradient-to-br from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-2xl p-8 flex items-center shadow-luxury hover:shadow-luxury-lg transition-all duration-300"
           >
-            <div className="p-4 bg-amber-400/30 rounded-xl">
+            <div className="p-4 bg-amber-400/20 rounded-xl">
               <Users className="text-amber-400" size={32} />
             </div>
             <div className="ml-6">
@@ -191,9 +190,9 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 rounded-2xl p-8 flex items-center shadow-luxury"
+            className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex items-center shadow-luxury hover:shadow-luxury-lg transition-all duration-300"
           >
-            <div className="p-4 bg-zinc-700/40 rounded-xl">
+            <div className="p-4 bg-zinc-700/30 rounded-xl">
               <Scissors className="text-amber-400" size={32} />
             </div>
             <div className="ml-6">
@@ -205,9 +204,9 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.25 }}
-            className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 rounded-2xl p-8 flex items-center shadow-luxury"
+            className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-2xl p-8 flex items-center shadow-luxury hover:shadow-luxury-lg transition-all duration-300"
           >
-            <div className="p-4 bg-zinc-700/40 rounded-xl">
+            <div className="p-4 bg-zinc-700/30 rounded-xl">
               <Calendar className="text-amber-400" size={32} />
             </div>
             <div className="ml-6">
@@ -219,9 +218,9 @@ const AdminDashboard = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-amber-400/20 to-yellow-500/20 border border-amber-400 rounded-2xl p-8 flex items-center shadow-luxury"
+            className="bg-gradient-to-br from-amber-400/10 to-yellow-500/10 border border-amber-400/30 rounded-2xl p-8 flex items-center shadow-luxury hover:shadow-luxury-lg transition-all duration-300"
           >
-            <div className="p-4 bg-amber-400/30 rounded-xl">
+            <div className="p-4 bg-amber-400/20 rounded-xl">
               <TrendingUp className="text-amber-400" size={32} />
             </div>
             <div className="ml-6">
@@ -238,7 +237,7 @@ const AdminDashboard = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="mb-10"
         >
-          <div className="bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 border border-zinc-700 rounded-3xl p-10 shadow-luxury">
+          <div className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/60 border border-zinc-700/40 rounded-3xl p-10 shadow-luxury">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-black text-white font-display">Recent Activity</h2>
               <Link to="/all-bookings" className="text-xs text-amber-400 hover:text-yellow-400 transition-colors font-bold">
@@ -264,4 +263,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-        
+       

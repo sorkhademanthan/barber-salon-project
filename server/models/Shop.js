@@ -163,8 +163,9 @@ const shopSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for performance - keep only one ownerId index
-shopSchema.index({ ownerId: 1 }, { unique: true });
+// Indexes for performance - REMOVE unique constraint on ownerId
+// shopSchema.index({ ownerId: 1 }, { unique: true }); // <-- REMOVE THIS LINE
+shopSchema.index({ ownerId: 1 }); // <-- Use non-unique index
 shopSchema.index({ name: 'text', description: 'text' });
 shopSchema.index({ 'address.city': 1 });
 shopSchema.index({ 'rating.average': -1 });

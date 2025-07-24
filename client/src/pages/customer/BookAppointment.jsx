@@ -37,6 +37,7 @@ const BookAppointment = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedServices, setSelectedServices] = useState([]);
   const [customerNotes, setCustomerNotes] = useState('');
+  const [selectedShopId, setSelectedShopId] = useState('');
 
   useEffect(() => {
     fetchShops();
@@ -45,7 +46,7 @@ const BookAppointment = () => {
   useEffect(() => {
     if (selectedShop) {
       fetchServices(selectedShop._id);
-      fetchBarbers(selectedShop._id);
+      fetchBarbers(selectedShop._id); // Always fetch from backend
     }
   }, [selectedShop]);
 
@@ -73,14 +74,14 @@ const BookAppointment = () => {
     }
   };
 
+  // Replace the fetchBarbers function to always fetch from the backend endpoint
   const fetchBarbers = async (shopId) => {
     try {
-      const shop = shops.find(s => s._id === shopId);
-      if (shop?.barbers) {
-        setBarbers(shop.barbers.filter(b => b.isActive));
-      }
+      const response = await api.get(`/shops/${shopId}/barbers`);
+      setBarbers(response.data.data || []);
     } catch (error) {
       toast.error('Failed to fetch barbers');
+      setBarbers([]);
     }
   };
 
@@ -391,80 +392,39 @@ const BookAppointment = () => {
               </p>
             </div>
 
-            <div className="grid gap-6">
-              {barbers.map((barber, index) => (
-                <motion.div
-                  key={barber.user._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`relative overflow-hidden bg-zinc-800/50 backdrop-blur-sm border rounded-xl p-6 cursor-pointer transition-all duration-300 hover:scale-[1.02] ${
-                    selectedBarber?.user._id === barber.user._id 
-                      ? 'border-amber-400 bg-amber-400/5 shadow-xl shadow-amber-400/20' 
-                      : 'border-zinc-700 hover:border-amber-400/50'
-                  }`}
-                  onClick={() => setSelectedBarber(barber)}
-                  whileHover={{ y: -4 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {selectedBarber?.user._id === barber.user._id && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute top-4 right-4 w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center"
-                    >
-                      <Check className="text-black" size={16} />
-                    </motion.div>
-                  )}
-                  
-                  <div className="flex items-start space-x-4">
-                    <div className="relative">
-                      <div className="w-16 h-16 bg-gradient-to-br from-amber-400/20 to-yellow-500/20 rounded-full flex items-center justify-center">
-                        <User className="text-amber-400" size={28} />
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-zinc-800 flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1">
-                      <h4 className="text-xl font-bold text-white mb-2">{barber.user.name}</h4>
-                      <div className="flex items-center space-x-4 mb-3">
-                        <div className="flex items-center text-amber-400">
-                          <Award size={16} className="mr-1" />
-                          <span className="font-medium">{barber.experience} years experience</span>
-                        </div>
-                        <div className="flex items-center text-zinc-400">
-                          <Star size={16} className="mr-1 text-amber-400" />
-                          <span>4.9 (127 reviews)</span>
-                        </div>
-                      </div>
-                      
-                      {barber.specialties?.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {barber.specialties.slice(0, 3).map((specialty, idx) => (
-                            <span 
-                              key={idx}
-                              className="px-3 py-1 bg-amber-400/10 border border-amber-400/20 rounded-full text-amber-400 text-sm font-medium"
-                            >
-                              {specialty}
-                            </span>
-                          ))}
-                          {barber.specialties.length > 3 && (
-                            <span className="px-3 py-1 bg-zinc-700/50 border border-zinc-600 rounded-full text-zinc-400 text-sm">
-                              +{barber.specialties.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      
-                      <p className="text-zinc-400 text-sm leading-relaxed">
-                        Specialist in modern cuts and traditional grooming. Known for attention to detail and creating personalized styles.
-                      </p>
-                    </div>
+            {/* Barber Selection */}
+            <div className="max-w-md mx-auto">
+              <label className="block text-lg font-bold text-amber-400 mb-3">
+                Select Your Barber
+              </label>
+              <select
+                className="w-full h-12 px-4 bg-zinc-900/60 border border-amber-400/30 rounded-xl text-white focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 transition-all duration-200"
+                value={selectedBarber ? selectedBarber.user._id : ''}
+                onChange={e => {
+                  const barber = barbers.find(b => b.user._id === e.target.value);
+                  setSelectedBarber(barber || null);
+                }}
+                required
+              >
+                <option value="">Select a barber</option>
+                {barbers.map(barber => (
+                  <option key={barber.user._id} value={barber.user._id}>
+                    {barber.user.name} ({barber.experience} yrs)
+                  </option>
+                ))}
+              </select>
+              {/* Optionally show details of selected barber below */}
+              {selectedBarber && (
+                <div className="mt-4 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700">
+                  <h4 className="text-white font-bold">{selectedBarber.user.name}</h4>
+                  <div className="text-zinc-400 text-sm">
+                    Experience: {selectedBarber.experience} years
+                    {selectedBarber.specialties?.length > 0 && (
+                      <span> | Specialties: {selectedBarber.specialties.join(', ')}</span>
+                    )}
                   </div>
-                </motion.div>
-              ))}
+                </div>
+              )}
             </div>
           </motion.div>
         );
@@ -877,3 +837,4 @@ const BookAppointment = () => {
 };
 
 export default BookAppointment;
+           
